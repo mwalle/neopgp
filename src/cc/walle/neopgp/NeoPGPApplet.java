@@ -715,12 +715,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			break;
 		case TAG_RESET_CODE:
 			adminPIN.assertValidated();
-			if (lc != 0) {
+			if (lc != 0)
 				userPUK.update(buf, off, lc);
-				userPUK.resetAndUnblock();
-			} else {
+			else
 				userPUK.clear();
-			}
 			break;
 		//case TAG_:
 		//	adminPIN.assertValidated();
