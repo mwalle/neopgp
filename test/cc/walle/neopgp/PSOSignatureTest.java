@@ -7,7 +7,7 @@ import javacard.framework.ISO7816;
 import org.junit.Test;
 
 public class PSOSignatureTest extends JcardsimTestCase {
-	@Test public void generateSignatureKey() {
+	@Test public void generateSignature() {
 		admin();
 		assertResponseOK("00478000000002B6000000");
 		assertResponseData(
