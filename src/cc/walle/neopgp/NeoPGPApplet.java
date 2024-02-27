@@ -89,6 +89,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final byte CHANGE_REFERENCE_DATA_P2_PW1 = (byte)0x81;
 	public static final byte CHANGE_REFERENCE_DATA_P2_PW3 = (byte)0x83;
 
+	public static final byte RESET_RETRY_COUNTER_P1_BY_RC = (byte)0x00;
+	public static final byte RESET_RETRY_COUNTER_P1_BY_PW3 = (byte)0x02;
+	public static final byte RESET_RETRY_COUNTER_P2_PW1 = (byte)0x81;
+
 	public static final short SW_TERMINATED = (short)0x6285;
 	/* from gnuk, name from ISO7816-4 */
 	public static final short SW_REFERENCE_DATA_NOT_FOUND = (short)0x6a88;
@@ -314,7 +318,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			processChangeReferenceData(apdu);
 			break;
 		case INS_RESET_RETRY_COUNTER:
-			ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+			processResetRetryCounter(apdu);
 			break;
 		case INS_PUT_DATA:
 			processPutData(apdu);
@@ -758,6 +762,32 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		}
 
 		pin.change(buf, off, lc);
+	}
+
+	private void processResetRetryCounter(APDU apdu) throws ISOException {
+		byte buf[] = apdu.getBuffer();
+		byte p1 = buf[ISO7816.OFFSET_P1];
+		byte p2 = buf[ISO7816.OFFSET_P2];
+		short lc, off, len;
+
+		lc = apdu.setIncomingAndReceive();
+		if (lc != apdu.getIncomingLength())
+			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
+
+		off = apdu.getOffsetCdata();
+
+		if (p2 != RESET_RETRY_COUNTER_P2_PW1)
+			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+
+		switch (p1) {
+		case RESET_RETRY_COUNTER_P1_BY_PW3:
+			adminPIN.assertValidated();
+			userPIN.update(buf, off, lc);
+			break;
+		case RESET_RETRY_COUNTER_P1_BY_RC:
+			userPIN.change(buf, off, lc, userPUK);
+			break;
+		}
 	}
 
 	private void processVerify(APDU apdu) throws ISOException {

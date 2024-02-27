@@ -67,26 +67,30 @@ public class NeoPIN extends OwnerPIN {
 		}
 	}
 
-	public void change(byte[] buf, short off, short length) {
+	public void change(byte[] buf, short off, short length, NeoPIN pin) {
 		short sanitizedLength;
 
-		if (length < (short)(2 * minLength))
+		if (length < (short)(minLength + pin.minLength))
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		if (length > (short)(2 * MAX_LENGTH))
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
 		/* Don't access buffer out of bounds */
-		sanitizedLength = actualLength;
+		sanitizedLength = pin.actualLength;
 		if (sanitizedLength > length)
 			sanitizedLength = length;
 
-		if (!check(buf, off, sanitizedLength))
+		if (!pin.check(buf, off, sanitizedLength))
 			ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
 
-		if ((short)(length - actualLength) < minLength)
+		if ((short)(length - pin.actualLength) < minLength)
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-		update(buf, (short)(off + actualLength), (short)(length - actualLength));
+		update(buf, (short)(off + pin.actualLength), (short)(length - pin.actualLength));
+	}
+
+	public void change(byte[] buf, short off, short length) {
+		change(buf, off, length, this);
 	}
 
 	public void assertValidated() throws ISOException {
