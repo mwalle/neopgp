@@ -68,13 +68,23 @@ public class NeoPIN extends OwnerPIN {
 	}
 
 	public void change(byte[] buf, short off, short length) {
+		short sanitizedLength;
+
 		if (length < (short)(2 * minLength))
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		if (length > (short)(2 * MAX_LENGTH))
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
-		if (!check(buf, off, actualLength))
+		/* Don't access buffer out of bounds */
+		sanitizedLength = actualLength;
+		if (sanitizedLength > length)
+			sanitizedLength = length;
+
+		if (!check(buf, off, sanitizedLength))
 			ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
+
+		if ((short)(length - actualLength) < minLength)
+			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
 		update(buf, (short)(off + actualLength), (short)(length - actualLength));
 	}
