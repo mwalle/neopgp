@@ -59,7 +59,7 @@ java gp.jar -install NeoPGPApplet.cap
 
 ## License
 
-The license is the GPLv3+, see `[COPYING](COPYING)`.
+The license is the GPLv3+, see [COPYING](COPYING).
 
 Please note, that if you use this applet in commercial products, the GPLv3
 demands that the user can modify the source code *and* replace the applet on the
