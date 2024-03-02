@@ -50,16 +50,16 @@ public class NeoRSAKey extends NeoKey {
 		if (status == STATUS_NOT_PRESENT)
 			ISOException.throwIt(NeoPGPApplet.SW_REFERENCE_DATA_NOT_FOUND);
 
-		off = Util.setShort(buf, off, NeoKey.TAG_PUBLIC_KEY);
+		off = NeoPGPApplet.setTag(buf, off, NeoKey.TAG_PUBLIC_KEY);
 		off = lengthOffset1 = NeoPGPApplet.prepareLength3(buf, off);
 
-		buf[off++] = TAG_RSA_PUBLIC_KEY_MODULUS;
+		off = NeoPGPApplet.setTag(buf, off, TAG_RSA_PUBLIC_KEY_MODULUS);
 		off = lengthOffset2 = NeoPGPApplet.prepareLength3(buf, off);
 
 		off += ((RSAPublicKey)publicKey).getModulus(buf, off);
 		NeoPGPApplet.setPreparedLength3(buf, off, lengthOffset2);
 
-		buf[off++] = TAG_RSA_PUBLIC_KEY_EXPONENT;
+		off = NeoPGPApplet.setTag(buf, off, TAG_RSA_PUBLIC_KEY_EXPONENT);
 		off = lengthOffset2 = NeoPGPApplet.prepareLength1(buf, off);
 		off += ((RSAPublicKey)publicKey).getExponent(buf, off);
 		NeoPGPApplet.setPreparedLength1(buf, off, lengthOffset2);
