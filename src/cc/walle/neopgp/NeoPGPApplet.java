@@ -429,12 +429,15 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private short getSecuritySupportTemplate(byte[] buf, short off) {
-		short lengthOffset;
+		short lengthOffset1, lengthOffset2;
 
 		off = setTag(buf, off, TAG_SECURITY_SUPPORT_TEMPLATE);
-		off = lengthOffset = prepareLength1(buf, off);
+		off = lengthOffset1 = prepareLength1(buf, off);
+		off = setTag(buf, off, TAG_DIGITAL_SIGNATURE_COUNTER);
+		off = lengthOffset2 = prepareLength1(buf, off);
 		off = getDigitalSignatureCounter(buf, off);
-		setPreparedLength1(buf, off, lengthOffset);
+		setPreparedLength1(buf, off, lengthOffset2);
+		setPreparedLength1(buf, off, lengthOffset1);
 
 		return off;
 	}
