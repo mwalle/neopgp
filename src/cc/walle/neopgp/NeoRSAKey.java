@@ -3,6 +3,7 @@ package cc.walle.neopgp;
 
 import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
+import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacard.security.KeyBuilder;
 import javacard.security.KeyPair;
@@ -22,7 +23,8 @@ public class NeoRSAKey extends NeoKey {
 
 	private short modulusSize;
 	private short publicExponentSize;
-	private Cipher cipher;
+	private Cipher encryptCipher;
+	private Cipher decryptCipher;
 
 	public NeoRSAKey(byte keyRef, short size) {
 		super(keyRef);
@@ -32,7 +34,8 @@ public class NeoRSAKey extends NeoKey {
 		publicKey = (RSAPublicKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, size, false);
 		privateKey = (RSAPrivateCrtKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_CRT_PRIVATE, size, false);
 		keyPair = new KeyPair(publicKey, privateKey);
-		cipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+		encryptCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+		decryptCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 	}
 
 	public short getAlgorithmAttributes(byte[] buf, short off) {
@@ -42,6 +45,20 @@ public class NeoRSAKey extends NeoKey {
 		buf[off++] = NeoRSAKey.IMPORT_FORMAT_CRT_W_MODULUS;
 
 		return off;
+	}
+
+	public void generate() {
+		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
+
+		if (needTransaction)
+			JCSystem.beginTransaction();
+
+		super.generate();
+		encryptCipher.init(privateKey, Cipher.MODE_ENCRYPT);
+		decryptCipher.init(privateKey, Cipher.MODE_DECRYPT);
+
+		if (needTransaction)
+			JCSystem.commitTransaction();
 	}
 
 	public short getPublicKey(byte[] buf, short off) {
@@ -81,23 +98,17 @@ public class NeoRSAKey extends NeoKey {
 			return 0;
 		}
 
-		cipher.init(privateKey, Cipher.MODE_ENCRYPT);
-		off = cipher.doFinal(buf, off, len, buf, (short)0);
-		return off;
+		return encryptCipher.doFinal(buf, off, len, buf, (short)0);
 	}
 
 	public short decipher(byte[] buf, short off, short len) {
 		if (buf[off] != NeoPGPApplet.PSO_PAD_RSA)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		cipher.init(privateKey, Cipher.MODE_DECRYPT);
-		off = cipher.doFinal(buf, (short)(off + 1), (short)(len - 1), buf, (short)0);
-		return off;
+		return decryptCipher.doFinal(buf, (short)(off + 1), (short)(len - 1), buf, (short)0);
 	}
 
 	public short authenticate(byte[] buf, short off, short len) {
-		cipher.init(privateKey, Cipher.MODE_ENCRYPT);
-		off = cipher.doFinal(buf, off, len, buf, (short)0);
-		return off;
+		return encryptCipher.doFinal(buf, off, len, buf, (short)0);
 	}
 }
