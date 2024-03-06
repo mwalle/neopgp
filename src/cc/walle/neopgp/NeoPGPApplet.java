@@ -984,8 +984,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			off = decryptionKey.decipher(buf, off, lc);
 			break;
 		case PSO_OP_ENCIPHER:
-			userPIN.isValidated(USER_PIN_MODE_NORMAL);
-			off = decryptionKey.decipher(buf, off, lc);
+			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
