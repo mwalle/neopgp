@@ -27,6 +27,21 @@ outside of an object constructor and all objects are created during the
     environment, i.e. during card production.
 
 
+## Features
+
+- [x] Pre-allocated resources
+- [x] Resources consumption configurable during applet registration
+- [x] Generate keys on card
+- [x] Key algorithm changable
+- [ ] Support for ECC keys
+- [ ] AES encryption/decryption
+- [ ] Key import
+- [ ] Per signature request PIN verification
+- [ ] KDF support
+- [ ] Private DOs
+- [ ] Get Challenge command support
+- [ ] SmartPGPs secure messaging
+
 ## Build it yourself
 
 You have to download a java card development kit, either from the [offical
