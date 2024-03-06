@@ -130,8 +130,11 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final byte LANGUAGE_MAX_LENGTH = (byte)8;
 	public static final short SPECIAL_DO_MAX_LENGTH = (short)0x100;
 
+	private NeoKeyStore signatureKeyStore;
 	private NeoKey signatureKey;
+	private NeoKeyStore decryptionKeyStore;
 	private NeoKey decryptionKey;
+	private NeoKeyStore authenticationKeyStore;
 	private NeoKey authenticationKey;
 
 	private NeoByteArray[] caFingerprints = null;
@@ -142,6 +145,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	private byte[] tmpBuffer = null;
 
 	private NeoPGPApplet(byte[] buf, short off, short len) {
+		short keyBitmask = (short)0x0001;
+		if (len >= (short)2)
+			keyBitmask = Util.getShort(buf, off);
+
 		userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN, (byte)2);
 		adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN);
 		userPUK = new NeoPIN(USER_PUK_MIN_LENGTH);
@@ -151,9 +158,12 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		login = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH);
 		sex = new NeoFixedByteArray((short)1, DEFAULT_SEX);
 
-		signatureKey = new NeoRSAKey((short)2048);
-		decryptionKey = new NeoRSAKey((short)2048);
-		authenticationKey = new NeoRSAKey((short)2048);
+		signatureKeyStore = new NeoKeyStore(keyBitmask);
+		decryptionKeyStore = new NeoKeyStore(keyBitmask);
+		authenticationKeyStore = new NeoKeyStore(keyBitmask);
+		signatureKey = signatureKeyStore.getDefaultKey();
+		decryptionKey = decryptionKeyStore.getDefaultKey();
+		authenticationKey = authenticationKeyStore.getDefaultKey();
 
 		caFingerprints = new NeoFixedByteArray[3];
 		for (byte i = 0; i < caFingerprints.length; i++)
@@ -273,9 +283,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		for (byte i = 0; i < caFingerprints.length; i++)
 			caFingerprints[i].clear();
 
-		signatureKey.clear();
-		decryptionKey.clear();
-		authenticationKey.clear();
+		signatureKeyStore.clear();
+		decryptionKeyStore.clear();
+		authenticationKeyStore.clear();
 		zeroByteArray(digitalSignatureCounter);
 
 		/* keep last, so we don't have to use transactions */
