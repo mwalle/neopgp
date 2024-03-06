@@ -8,14 +8,18 @@ import javacardx.crypto.Cipher;
 public class NeoKeyStore {
 	public static final byte ENCRYPT = 0;
 	public static final byte DECRYPT = 1;
+
+	private short algorithmAttributesTag;
 	private NeoKey[] keyStore;
 
 	/* needed by RSA keys */
 	private Cipher[] ciphers;
 
-	public NeoKeyStore(short bitmask) {
+	public NeoKeyStore(short algorithmAttributesTag, short bitmask) {
 		NeoRSAKey rsakey;
 		short n = 0;
+
+		this.algorithmAttributesTag = algorithmAttributesTag;
 
 		bitmask &= 0x0007;
 		for (short i = (short)1; (i & (short)0x3ff) != 0; i <<= 1)
@@ -53,5 +57,18 @@ public class NeoKeyStore {
 	public void clear() {
 		for (short i = 0; i < keyStore.length; i++)
 			keyStore[i].clear();
+	}
+
+	public short getAllAlgorithmAttributes(byte[] buf, short off) {
+		short lengthOffset;
+
+		for (short i = 0; i < keyStore.length; i++) {
+			off = NeoPGPApplet.setTag(buf, off, algorithmAttributesTag);
+			off = lengthOffset = NeoPGPApplet.prepareLength1(buf, off);
+			off = keyStore[i].getAlgorithmAttributes(buf, off);
+			NeoPGPApplet.setPreparedLength1(buf, off, lengthOffset);
+		}
+
+		return off;
 	}
 }

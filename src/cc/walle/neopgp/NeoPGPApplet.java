@@ -58,6 +58,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short TAG_DIGITAL_SIGNATURE_COUNTER = (short)0x0093;
 	public static final short TAG_RESET_CODE = (short)0x00d3;
 	public static final short TAG_KEY_INFORMATION = (short)0x00de;
+	public static final short TAG_ALGORITHM_INFORMATION = (short)0x00fa;
 
 	public static final byte USER_PIN_MIN_LENGTH = (byte)6;
 	public static final byte ADMIN_PIN_MIN_LENGTH = (byte)8;
@@ -158,9 +159,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		login = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH);
 		sex = new NeoFixedByteArray((short)1, DEFAULT_SEX);
 
-		signatureKeyStore = new NeoKeyStore(keyBitmask);
-		decryptionKeyStore = new NeoKeyStore(keyBitmask);
-		authenticationKeyStore = new NeoKeyStore(keyBitmask);
+		signatureKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_SIGNATURE, keyBitmask);
+		decryptionKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_DECRYPTION, keyBitmask);
+		authenticationKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION, keyBitmask);
 		signatureKey = signatureKeyStore.getDefaultKey();
 		decryptionKey = decryptionKeyStore.getDefaultKey();
 		authenticationKey = authenticationKeyStore.getDefaultKey();
@@ -538,6 +539,20 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		return off;
 	}
 
+	private short getAlgorithmInformation(byte[] buf, short off) {
+		short lengthOffset;
+
+		off = setTag(buf, off, TAG_ALGORITHM_INFORMATION);
+		off = lengthOffset = prepareLength2(buf, off);
+		off = signatureKeyStore.getAllAlgorithmAttributes(buf, off);
+		off = decryptionKeyStore.getAllAlgorithmAttributes(buf, off);
+		off = authenticationKeyStore.getAllAlgorithmAttributes(buf, off);
+		setPreparedLength2(buf, off, lengthOffset);
+
+		return off;
+	}
+
+
 	private void processGetData(APDU apdu) throws ISOException {
 		byte buf[] = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
@@ -641,6 +656,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			break;
 		case TAG_KEY_INFORMATION:
 			off = getKeyInformation(buf, off);
+			break;
+		case TAG_ALGORITHM_INFORMATION:
+			off = getAlgorithmInformation(buf, off);
 			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
