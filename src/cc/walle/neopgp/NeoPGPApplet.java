@@ -151,9 +151,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		login = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH);
 		sex = new NeoFixedByteArray((short)1, DEFAULT_SEX);
 
-		signatureKey = new NeoRSAKey((byte)1, (short)2048);
-		decryptionKey = new NeoRSAKey((byte)2, (short)2048);
-		authenticationKey = new NeoRSAKey((byte)3, (short)2048);
+		signatureKey = new NeoRSAKey((short)2048);
+		decryptionKey = new NeoRSAKey((short)2048);
+		authenticationKey = new NeoRSAKey((short)2048);
 
 		caFingerprints = new NeoFixedByteArray[3];
 		for (byte i = 0; i < caFingerprints.length; i++)
@@ -451,11 +451,11 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private short getKeyInformation(byte[] buf, short off) {
-		off = signatureKey.getKeyRef(buf, off);
+		off = NeoKey.SIGNATURE_KEY;
 		off = signatureKey.getStatus(buf, off);
-		off = decryptionKey.getKeyRef(buf, off);
+		off = NeoKey.DECRYPTION_KEY;
 		off = decryptionKey.getStatus(buf, off);
-		off = authenticationKey.getKeyRef(buf, off);
+		off = NeoKey.AUTHENTICATION_KEY;
 		off = authenticationKey.getStatus(buf, off);
 
 		return off;

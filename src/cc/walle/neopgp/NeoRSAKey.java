@@ -26,8 +26,8 @@ public class NeoRSAKey extends NeoKey {
 	private Cipher encryptCipher;
 	private Cipher decryptCipher;
 
-	public NeoRSAKey(byte keyRef, short size) {
-		super(keyRef);
+	public NeoRSAKey(short size) {
+		super();
 		modulusSize = size;
 		publicExponentSize = 17;
 

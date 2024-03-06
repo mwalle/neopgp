@@ -18,6 +18,11 @@ public abstract class NeoKey {
 	public static final byte STATUS_GENERATED = 1;
 	public static final byte STATUS_IMPORTED = 2;
 
+	/* these are the Key-Refs from the OpenPGP card spec */
+	public static final byte SIGNATURE_KEY = 1;
+	public static final byte DECRYPTION_KEY = 2;
+	public static final byte AUTHENTICATION_KEY = 3;
+
 	protected PublicKey publicKey = null;
 	protected PrivateKey privateKey = null;
 	protected KeyPair keyPair = null;
@@ -25,10 +30,8 @@ public abstract class NeoKey {
 	protected NeoByteArray fingerprint = null;
 	protected NeoByteArray timestamp = null;
 	protected byte status;
-	protected byte keyRef;
 
-	public NeoKey(byte keyRef) {
-		this.keyRef = keyRef;
+	public NeoKey() {
 		status = STATUS_NOT_PRESENT;
 		fingerprint = new NeoFixedByteArray(NeoPGPApplet.FINGERPRINT_LENGTH);
 		timestamp = new NeoFixedByteArray(NeoPGPApplet.TIMESTAMP_LENGTH);
@@ -57,11 +60,6 @@ public abstract class NeoKey {
 		status = STATUS_GENERATED;
 		if (needTransaction)
 			JCSystem.commitTransaction();
-	}
-
-	public short getKeyRef(byte[] buf, short off) {
-		buf[off++] = keyRef;
-		return off;
 	}
 
 	public short getStatus(byte[] buf, short off) {
