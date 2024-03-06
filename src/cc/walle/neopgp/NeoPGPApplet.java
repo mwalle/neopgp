@@ -141,7 +141,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	private static final byte USER_PIN_MODE_CDS = (byte)1;
 	private byte[] tmpBuffer = null;
 
-	private NeoPGPApplet() {
+	private NeoPGPApplet(byte[] buf, short off, short len) {
 		userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN, (byte)2);
 		adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN);
 		userPUK = new NeoPIN(USER_PUK_MIN_LENGTH);
@@ -164,7 +164,14 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	public static void install(byte[] buf, short off, byte len) {
-		NeoPGPApplet app = new NeoPGPApplet();
+		short aidOffset = off;
+		short aidLength = buf[off];
+		short infoOffset = (short)(aidOffset + aidLength + 1);
+		short infoLength = buf[infoOffset];
+		short paramsOffset = (short)(infoOffset + infoLength + 1);
+		short paramsLength = buf[paramsOffset];
+
+		NeoPGPApplet app = new NeoPGPApplet(buf, (short)(paramsOffset + 1), paramsLength);
 
 		app.register();
 		app.reset();
