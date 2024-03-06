@@ -37,6 +37,7 @@ public abstract class NeoKey {
 		timestamp = new NeoFixedByteArray(NeoPGPApplet.TIMESTAMP_LENGTH);
 	}
 
+	public abstract boolean matchAlgorithmAttributes(byte[] buf, short off, short len);
 	public abstract short getAlgorithmAttributes(byte[] buf, short off);
 	public abstract short getPublicKey(byte[] buf, short off);
 	public abstract short sign(byte[] buf, short off, short len);
