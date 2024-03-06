@@ -12,7 +12,6 @@ import javacard.security.RSAPublicKey;
 import javacardx.crypto.Cipher;
 
 public class NeoRSAKey extends NeoKey {
-
 	public static final byte IMPORT_FORMAT_CRT_W_MODULUS = 0x03;
 	public static final byte TAG_RSA_PUBLIC_KEY_MODULUS = (byte)0x81;
 	public static final byte TAG_RSA_PUBLIC_KEY_EXPONENT = (byte)0x82;
@@ -23,6 +22,8 @@ public class NeoRSAKey extends NeoKey {
 
 	private short modulusSize;
 	private short publicExponentSize;
+
+	/* borrowed from KeyStore */
 	private Cipher encryptCipher;
 	private Cipher decryptCipher;
 
@@ -34,8 +35,11 @@ public class NeoRSAKey extends NeoKey {
 		publicKey = (RSAPublicKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, size, false);
 		privateKey = (RSAPrivateCrtKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_CRT_PRIVATE, size, false);
 		keyPair = new KeyPair(publicKey, privateKey);
-		encryptCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
-		decryptCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+	}
+
+	public void init(Cipher[] ciphers) {
+		encryptCipher = ciphers[NeoKeyStore.ENCRYPT];
+		decryptCipher = ciphers[NeoKeyStore.DECRYPT];
 	}
 
 	public short getAlgorithmAttributes(byte[] buf, short off) {
