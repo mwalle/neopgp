@@ -200,12 +200,20 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		return (short)(off + 3);
 	}
 
+	public static short prepareLength2(byte[] buf, short off) {
+		return (short)(off + 2);
+	}
+
 	public static short prepareLength1(byte[] buf, short off) {
 		return (short)(off + 1);
 	}
 
 	public static void setPreparedLength3(byte[] buf, short off, short lenOff) {
 		setLength3(buf, (short)(lenOff - 3), (short)(off - lenOff));
+	}
+
+	public static void setPreparedLength2(byte[] buf, short off, short lenOff) {
+		setLength2(buf, (short)(lenOff - 2), (short)(off - lenOff));
 	}
 
 	public static void setPreparedLength1(byte[] buf, short off, short lenOff) {
