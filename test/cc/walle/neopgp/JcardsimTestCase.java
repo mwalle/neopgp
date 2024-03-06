@@ -6,6 +6,7 @@ import com.licel.jcardsim.utils.AIDUtil;
 import com.licel.jcardsim.utils.ByteUtil;
 import javacard.framework.AID;
 import javacard.framework.ISO7816;
+import javacard.framework.Util;
 import javax.smartcardio.ResponseAPDU;
 
 public abstract class JcardsimTestCase {
@@ -13,13 +14,29 @@ public abstract class JcardsimTestCase {
 	Simulator simulator;
 	//AID appletAID = AIDUtil.create("d27600012401");
 	AID appletAID = AIDUtil.create("d276000124010304ffff000000000000");
+	byte[] info = ByteUtil.byteArray("00");
+	byte[] params = ByteUtil.byteArray("0001");
 
    	public JcardsimTestCase() {
 		byte[] buf = new byte[32];
-		buf[0] = appletAID.getBytes(buf, (short)1);
+		short off = 0;
+		byte len;
+
+		/* aid */
+		len = appletAID.getBytes(buf, (short)1);
+		buf[off++] = len;
+		off += len;
+
+		/* info */
+		buf[off++] = (byte)info.length;
+		off = Util.arrayCopyNonAtomic(info, (short)0, buf, off, (short)info.length);
+
+		/* params */
+		buf[off++] = (byte)params.length;
+		off = Util.arrayCopyNonAtomic(params, (short)0, buf, off, (short)params.length);
 
 		simulator = new Simulator();
-		simulator.installApplet(appletAID, NeoPGPApplet.class, buf, (short)0, (byte)(buf[0] + 1));
+		simulator.installApplet(appletAID, NeoPGPApplet.class, buf, (short)0, (byte)off);
 		simulator.selectApplet(appletAID);
 	}
 
