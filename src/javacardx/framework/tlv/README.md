@@ -6,14 +6,12 @@
 
 ## Supported methods
 
+ * `BERTag.isConstructed()`
  * `BERTag.size()`
  * `BERTag.tagNumber()`
- * `BERTag.isConstructed()`
  * `BERTag.tagClass()`
- * `BERTLV.getLengthOffset()`
- * `BERTLV.getLengthOffset()`
  * `BERTLV.getLength()`
- * `BERTLV.getLengthOffset()`
+ * `BERTLV.getTag()`
  * `ConstructedBERTLV.find()`
  * `ConstructedBERTLV.findNext()`
  * `PrimitiveBERTLV.getValueOffset()`
