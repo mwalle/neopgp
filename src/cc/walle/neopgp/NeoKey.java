@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 package cc.walle.neopgp;
 
+import javacard.framework.ISO7816;
+import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
+import javacard.security.CryptoException;
 import javacard.security.PublicKey;
 import javacard.security.PrivateKey;
 import javacard.security.KeyPair;
@@ -62,7 +65,12 @@ public abstract class NeoKey {
 		if (needTransaction)
 			JCSystem.beginTransaction();
 
-		doImportKey(buf, off, len);
+		try {
+			doImportKey(buf, off, len);
+		} catch (CryptoException e) {
+			clear();
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		}
 		status = STATUS_IMPORTED;
 		if (needTransaction)
 			JCSystem.commitTransaction();
