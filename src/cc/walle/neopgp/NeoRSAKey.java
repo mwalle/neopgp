@@ -22,7 +22,6 @@ public class NeoRSAKey extends NeoKey {
 
 	public static final byte ALGORITHM_ATTRIBUTES_LENGTH = (byte)6;
 
-	private short modulusSize;
 	private short publicExponentSize;
 
 	/* borrowed from KeyStore */
@@ -31,7 +30,6 @@ public class NeoRSAKey extends NeoKey {
 
 	public NeoRSAKey(short size) {
 		super();
-		modulusSize = size;
 		publicExponentSize = 17;
 
 		publicKey = (RSAPublicKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, size, false);
@@ -46,7 +44,7 @@ public class NeoRSAKey extends NeoKey {
 
 	public short getAlgorithmAttributes(byte[] buf, short off) {
 		buf[off++] = NeoKey.ALGORITHM_ID_RSA;
-		off = Util.setShort(buf, off, modulusSize);
+		off = Util.setShort(buf, off, privateKey.getSize());
 		off = Util.setShort(buf, off, publicExponentSize);
 		buf[off++] = NeoRSAKey.IMPORT_FORMAT_CRT_W_MODULUS;
 
@@ -58,7 +56,7 @@ public class NeoRSAKey extends NeoKey {
 			return false;
 		if (buf[off++] != NeoKey.ALGORITHM_ID_RSA)
 			return false;
-		if (Util.getShort(buf, off) != modulusSize)
+		if (Util.getShort(buf, off) != privateKey.getSize())
 			return false;
 
 		/* Ignore the remaining properties, so GnuPG can switch keys. */
