@@ -69,5 +69,9 @@
     </junit>
   </target>
 
-
+  <target name="clean">
+    <delete dir="build" />
+    <delete file="javacardx.framework.tlv.cap" />
+    <delete file="NeoPGPApplet.cap" />
+  </target>
 </project>
