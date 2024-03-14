@@ -52,7 +52,7 @@ public abstract class NeoKey {
 		timestamp.clear();
 	}
 
-	public void generate() {
+	public void generateKey() {
 		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
 
 		if (needTransaction)

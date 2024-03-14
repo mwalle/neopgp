@@ -65,13 +65,13 @@ public class NeoRSAKey extends NeoKey {
 		return true;
 	}
 
-	public void generate() {
+	public void generateKey() {
 		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
 
 		if (needTransaction)
 			JCSystem.beginTransaction();
 
-		super.generate();
+		super.generateKey();
 		encryptCipher.init(privateKey, Cipher.MODE_ENCRYPT);
 		decryptCipher.init(privateKey, Cipher.MODE_DECRYPT);
 

@@ -983,7 +983,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		case GENKEY_P1_GENERATE:
 			adminPIN.assertValidated();
 			JCSystem.beginTransaction();
-			key.generate();
+			key.generateKey();
 			if (key == signatureKey)
 				zeroByteArray(digitalSignatureCounter);
 			JCSystem.commitTransaction();
