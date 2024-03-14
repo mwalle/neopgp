@@ -30,6 +30,11 @@ public class NeoRSAKey extends NeoKey {
 
 	public NeoRSAKey(short size) {
 		super();
+
+		/*
+		 * If the exponent in the public key is not pre-initialized,
+		 * 65537 wil be used. Thus it has 17 bits.
+		 */
 		publicExponentSize = 17;
 
 		publicKey = (RSAPublicKey)KeyBuilder.buildKey(KeyBuilder.TYPE_RSA_PUBLIC, size, false);
