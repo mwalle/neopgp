@@ -9,6 +9,8 @@ import javacard.security.KeyPair;
 
 public abstract class NeoKey {
 	public static final short TAG_PUBLIC_KEY = (short)0x7f49;
+	public static final byte[] BER_TAG_PRIVATE_KEY_TEMPLATE = { (byte)0x7f, (byte)0x48 };
+	public static final byte[] BER_TAG_PRIVATE_KEY_DATA = { (byte)0x5f, (byte)0x48 };
 
 	public static final byte ALGORITHM_ID_RSA = (byte)0x01;
 	public static final byte ALGORITHM_ID_ECDH = (byte)0x12;
@@ -40,6 +42,7 @@ public abstract class NeoKey {
 	public abstract boolean matchAlgorithmAttributes(byte[] buf, short off, short len);
 	public abstract short getAlgorithmAttributes(byte[] buf, short off);
 	public abstract short getPublicKey(byte[] buf, short off);
+	public abstract void doImportKey(byte[] buf, short off, short len);
 	public abstract short sign(byte[] buf, short off, short len);
 	public abstract short decipher(byte[] buf, short off, short len);
 	public abstract short authenticate(byte[] buf, short off, short len);
@@ -50,6 +53,19 @@ public abstract class NeoKey {
 		publicKey.clearKey();
 		fingerprint.clear();
 		timestamp.clear();
+	}
+
+
+	public void importKey(byte[] buf, short off, short len) {
+		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
+
+		if (needTransaction)
+			JCSystem.beginTransaction();
+
+		doImportKey(buf, off, len);
+		status = STATUS_IMPORTED;
+		if (needTransaction)
+			JCSystem.commitTransaction();
 	}
 
 	public void generateKey() {
