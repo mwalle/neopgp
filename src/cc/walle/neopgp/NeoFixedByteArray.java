@@ -22,4 +22,8 @@ public class NeoFixedByteArray extends NeoByteArray {
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		return super.setNonAtomic(buf, off, len);
 	}
+
+	short getLength() {
+		return (short)data.length;
+	}
 }

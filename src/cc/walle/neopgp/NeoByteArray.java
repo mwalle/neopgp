@@ -6,7 +6,7 @@ import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
 
-public class NeoByteArray {
+public abstract class NeoByteArray {
 	byte[] data = null;
 	byte[] defaultValue = null;
 
@@ -20,6 +20,8 @@ public class NeoByteArray {
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 		this.defaultValue = defaultValue;
 	}
+
+	abstract short getLength();
 
 	public short setNonAtomic(byte[] buf, short off, short len) {
 		if (len > data.length)
@@ -37,10 +39,6 @@ public class NeoByteArray {
 
 	public short get(byte[] buf, short off) {
 		return Util.arrayCopyNonAtomic(data, (short)0, buf, off, getLength());
-	}
-
-	public short getLength() {
-		return (short)data.length;
 	}
 
 	public void clear() {

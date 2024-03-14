@@ -24,7 +24,7 @@ public class NeoByteArrayWithLength extends NeoByteArray {
 		return super.setNonAtomic(buf, off, len);
 	}
 
-	public short getLength() {
+	short getLength() {
 		return length;
 	}
 
