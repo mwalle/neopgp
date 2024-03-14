@@ -8,6 +8,7 @@ import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacardx.apdu.ExtendedLength;
+import javacardx.framework.tlv.ConstructedBERTLV;
 
 public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final byte INS_SELECT_DATA = (byte)0xa5;
@@ -17,6 +18,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final byte INS_CHANGE_REFERENCE_DATA = (byte)0x24;
 	public static final byte INS_RESET_RETRY_COUNTER = (byte)0x2c;
 	public static final byte INS_PUT_DATA = (byte)0xda;
+	public static final byte INS_IMPORT_KEY = (byte)0xdb;
 	public static final byte INS_GENERATE_ASYMMETRIC_KEY_PAIR = (byte)0x47;
 	public static final byte INS_PERFORM_SECURITY_OPERATION = (byte)0x2a;
 	public static final byte INS_INTERNAL_AUTHENTICATE = (byte)0x88;
@@ -59,6 +61,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short TAG_RESET_CODE = (short)0x00d3;
 	public static final short TAG_KEY_INFORMATION = (short)0x00de;
 	public static final short TAG_ALGORITHM_INFORMATION = (short)0x00fa;
+	public static final short TAG_EXTENDED_HEADER_LIST = (short)0x004d;
 
 	public static final byte USER_PIN_MIN_LENGTH = (byte)6;
 	public static final byte ADMIN_PIN_MIN_LENGTH = (byte)8;
@@ -93,6 +96,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final byte RESET_RETRY_COUNTER_P1_BY_RC = (byte)0x00;
 	public static final byte RESET_RETRY_COUNTER_P1_BY_PW3 = (byte)0x02;
 	public static final byte RESET_RETRY_COUNTER_P2_PW1 = (byte)0x81;
+
+	private static final byte[] BER_TAG_SIGNATURE_KEY = { (byte)0xb6 };
+	private static final byte[] BER_TAG_DECRYPTION_KEY = { (byte)0xb8 };
+	private static final byte[] BER_TAG_AUTHENTICATION_KEY = { (byte)0xa4 };
 
 	public static final short SW_TERMINATED = (short)0x6285;
 	/* from gnuk, name from ISO7816-4 */
@@ -349,6 +356,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		case INS_PUT_DATA:
 			processPutData(apdu);
 			break;
+		case INS_IMPORT_KEY:
+			processImportKey(apdu);
+			break;
 		case INS_GENERATE_ASYMMETRIC_KEY_PAIR:
 			processGenerateAsymmetricKeyPair(apdu);
 			break;
@@ -434,7 +444,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		buf[off++] =
 			(byte)(0 << 7) | /* SM supported */
 			(byte)(0 << 6) | /* GET_CHALLENGE supported */
-			(byte)(0 << 5) | /* Key import supported  */
+			(byte)(1 << 5) | /* Key import supported  */
 			(byte)(0 << 4) | /* PW status changeable */
 			(byte)(0 << 3) | /* Private use DOs supported */
 			(byte)(1 << 2) | /* Algorithm attributes changable */
@@ -1052,5 +1062,55 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		userPIN.isValidated(USER_PIN_MODE_NORMAL);
 		authenticationKey.authenticate(buf, off, lc);
+	}
+
+	private void processImportKey(APDU apdu) throws ISOException {
+		byte buf[] = apdu.getBuffer();
+		byte p1 = buf[ISO7816.OFFSET_P1];
+		byte p2 = buf[ISO7816.OFFSET_P2];
+		short tag = Util.makeShort(p1, p2);
+		short lc, pos = 0, len;
+		short off;
+
+		if (p1 != (byte)0x3f || p2 != (byte)0xff)
+			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+
+		len = apdu.setIncomingAndReceive();
+		lc = apdu.getIncomingLength();
+		off = apdu.getOffsetCdata();
+		do {
+			Util.arrayCopyNonAtomic(buf, off, tmpBuffer, pos, len);
+			pos += len;
+		} while ((len = apdu.receiveBytes(off)) != (short)0);
+
+		if (pos != lc)
+			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
+
+		adminPIN.assertValidated();
+
+		buf = tmpBuffer;
+		if (buf[(short)0] != (byte)TAG_EXTENDED_HEADER_LIST)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+
+		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_SIGNATURE_KEY, (short)0);
+		if (off > (short)0) {
+			zeroByteArray(digitalSignatureCounter);
+			signatureKey.importKey(buf, (short)0, lc);
+			return;
+		}
+
+		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_DECRYPTION_KEY, (short)0);
+		if (off > (short)0) {
+			decryptionKey.importKey(buf, (short)0, lc);
+			return;
+		}
+
+		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_AUTHENTICATION_KEY, (short)0);
+		if (off > (short)0) {
+			authenticationKey.importKey(buf, (short)0, lc);
+			return;
+		}
+
+		ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 	}
 }
