@@ -10,11 +10,22 @@ import javacard.security.KeyPair;
 import javacard.security.RSAPrivateCrtKey;
 import javacard.security.RSAPublicKey;
 import javacardx.crypto.Cipher;
+import javacardx.framework.tlv.BERTLV;
+import javacardx.framework.tlv.ConstructedBERTLV;
+import javacardx.framework.tlv.PrimitiveBERTLV;
 
 public class NeoRSAKey extends NeoKey {
 	public static final byte IMPORT_FORMAT_CRT_W_MODULUS = 0x03;
 	public static final byte TAG_RSA_PUBLIC_KEY_MODULUS = (byte)0x81;
 	public static final byte TAG_RSA_PUBLIC_KEY_EXPONENT = (byte)0x82;
+
+	public static final byte TAG_PUBLIC_KEY_EXPONENT = (byte)0x91;
+	public static final byte TAG_PRIVATE_KEY_P = (byte)0x92;
+	public static final byte TAG_PRIVATE_KEY_Q = (byte)0x93;
+	public static final byte TAG_PRIVATE_KEY_PQ = (byte)0x94;
+	public static final byte TAG_PRIVATE_KEY_DP1 = (byte)0x95;
+	public static final byte TAG_PRIVATE_KEY_DQ1 = (byte)0x96;
+	public static final byte TAG_PUBLIC_KEY_MODULUS = (byte)0x97;
 
 	public static final byte DIGEST_INFO_SHA256_LENGTH = (byte)51;
 	public static final byte DIGEST_INFO_SHA384_LENGTH = (byte)67;
@@ -104,6 +115,89 @@ public class NeoRSAKey extends NeoKey {
 		NeoPGPApplet.setPreparedLength3(buf, off, lengthOffset1);
 
 		return off;
+	}
+
+	public void doImportKey(byte[] buf, short off, short len) {
+		RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey)privateKey;
+		RSAPublicKey rsaPublicKey = (RSAPublicKey)publicKey;
+		short templateTLVLength;
+		short templateTLV, dataTLV, templateTLVOffset;
+		short exponentLength = 0, modulusLength = 0, pLength = 0;
+		short qLength = 0, pqLength = 0, dp1Length = 0, dq1Length = 0;
+
+		/*
+		 * Oh the horror. The contents of the 7F48 tag looks like BER
+		 * encoded but it's missing the actual content. That is then
+		 * part of the 5F48 tag. Even worse, the 7F48 tag refers to a
+		 * constructed one, but because the value is missing, it's not
+		 * and we cannot use the javacardx.framework.tlv utils. Or can
+		 * we...
+		 */
+		templateTLV = ConstructedBERTLV.find(buf, off, NeoKey.BER_TAG_PRIVATE_KEY_TEMPLATE, (short)0);
+		if (templateTLV < (short)0)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+
+		dataTLV = ConstructedBERTLV.findNext(buf, off, templateTLV, NeoKey.BER_TAG_PRIVATE_KEY_DATA, (short)0);
+		if (dataTLV < (short)0)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+
+		/*
+		 * Here be dragons. We clear the constructed bit so we can
+		 * actually use PrimitiveBERTLV.getValueOffset().
+		 */
+		templateTLVLength = BERTLV.getLength(buf, templateTLV);
+		buf[templateTLV] &= (byte)~0x20;
+		templateTLVOffset = PrimitiveBERTLV.getValueOffset(buf, templateTLV);
+
+		for (off = templateTLVOffset;
+		     off < (short)(templateTLVOffset + templateTLVLength);
+		     off = PrimitiveBERTLV.getValueOffset(buf, off)) {
+			switch (buf[off]) {
+			case TAG_PUBLIC_KEY_EXPONENT:
+				exponentLength = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PRIVATE_KEY_P:
+				pLength = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PRIVATE_KEY_Q:
+				qLength = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PRIVATE_KEY_PQ:
+				pqLength = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PRIVATE_KEY_DP1:
+				dp1Length = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PRIVATE_KEY_DQ1:
+				dq1Length = BERTLV.getLength(buf, off);
+				break;
+			case TAG_PUBLIC_KEY_MODULUS:
+				modulusLength = BERTLV.getLength(buf, off);
+				break;
+			}
+		}
+
+		if (exponentLength == (short)0 || modulusLength == (short)0 ||
+				pLength == (short)0 || qLength == (short)0 ||
+				pqLength == (short)0 || dp1Length == (short)0 ||
+				dq1Length == (short)0)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+
+		off = PrimitiveBERTLV.getValueOffset(buf, dataTLV);
+
+		rsaPublicKey.setExponent(buf, off, exponentLength);
+		off += exponentLength;
+		rsaPrivateKey.setP(buf, off, pLength);
+		off += pLength;
+		rsaPrivateKey.setQ(buf, off, qLength);
+		off += qLength;
+		rsaPrivateKey.setPQ(buf, off, pqLength);
+		off += pqLength;
+		rsaPrivateKey.setDP1(buf, off, dp1Length);
+		off += dp1Length;
+		rsaPrivateKey.setDQ1(buf, off, dq1Length);
+		off += dq1Length;
+		rsaPublicKey.setModulus(buf, off, modulusLength);
 	}
 
 	public short sign(byte[] buf, short off, short len) {
