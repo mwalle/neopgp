@@ -33,9 +33,9 @@ outside of an object constructor and all objects are created during the
 - [x] Resources consumption configurable during applet registration
 - [x] Generate keys on card
 - [x] Key algorithm changable
+- [x] Key import
 - [ ] Support for ECC keys
 - [ ] AES encryption/decryption
-- [ ] Key import
 - [ ] Per signature request PIN verification
 - [ ] KDF support
 - [ ] Private DOs
