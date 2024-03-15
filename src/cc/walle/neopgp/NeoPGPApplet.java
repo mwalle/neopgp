@@ -11,6 +11,8 @@ import javacardx.apdu.ExtendedLength;
 import javacardx.framework.tlv.ConstructedBERTLV;
 
 public class NeoPGPApplet extends Applet implements ExtendedLength {
+	public static final short BUFFER_SIZE_MIN_LENGTH = (short)0x200;
+
 	public static final byte INS_SELECT_DATA = (byte)0xa5;
 	public static final byte INS_GET_DATA = (byte)0xca;
 	public static final byte INS_GET_NEXT_DATA = (byte)0xcc;
@@ -178,7 +180,24 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			caFingerprints[i] = new NeoFixedByteArray(FINGERPRINT_LENGTH);
 		digitalSignatureCounter = new byte[3];
 
-		tmpBuffer = JCSystem.makeTransientByteArray((short)0x300, JCSystem.CLEAR_ON_DESELECT);
+		tmpBuffer = createTmpBuffer();
+	}
+
+	private byte[] createTmpBuffer() {
+		short size = BUFFER_SIZE_MIN_LENGTH;
+		short tmp;
+
+		tmp = signatureKeyStore.getImportBufferSize();
+		if (size < tmp)
+			size = tmp;
+		tmp = decryptionKeyStore.getImportBufferSize();
+		if (size < tmp)
+			size = tmp;
+		tmp = authenticationKeyStore.getImportBufferSize();
+		if (size < tmp)
+			size = tmp;
+
+		return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
 	}
 
 	public static void install(byte[] buf, short off, byte len) {

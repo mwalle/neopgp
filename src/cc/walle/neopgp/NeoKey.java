@@ -46,6 +46,7 @@ public abstract class NeoKey {
 	public abstract short getAlgorithmAttributes(byte[] buf, short off);
 	public abstract short getPublicKey(byte[] buf, short off);
 	public abstract void doImportKey(byte[] buf, short off, short len);
+	public abstract short getImportBufferSize();
 	public abstract short sign(byte[] buf, short off, short len);
 	public abstract short decipher(byte[] buf, short off, short len);
 	public abstract short authenticate(byte[] buf, short off, short len);

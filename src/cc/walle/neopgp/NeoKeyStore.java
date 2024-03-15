@@ -59,6 +59,19 @@ public class NeoKeyStore {
 			keyStore[i].clear();
 	}
 
+	public short getImportBufferSize() {
+		short size = 0;
+		short tmp;
+
+		for (short i = 0; i < keyStore.length; i++) {
+			tmp = keyStore[i].getImportBufferSize();
+			if (size < tmp)
+				size = tmp;
+		}
+
+		return size;
+	}
+
 	public short getAllAlgorithmAttributes(byte[] buf, short off) {
 		short lengthOffset;
 

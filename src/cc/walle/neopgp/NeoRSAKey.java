@@ -117,6 +117,20 @@ public class NeoRSAKey extends NeoKey {
 		return off;
 	}
 
+	public short getImportBufferSize() {
+		switch (privateKey.getSize()) {
+		case 2048:
+			return 0x400;
+		case 3072:
+			return 0x600;
+		case 4096:
+			return 0x800;
+		default:
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+			return 0;
+		}
+	}
+
 	public void doImportKey(byte[] buf, short off, short len) {
 		RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey)privateKey;
 		RSAPublicKey rsaPublicKey = (RSAPublicKey)publicKey;
