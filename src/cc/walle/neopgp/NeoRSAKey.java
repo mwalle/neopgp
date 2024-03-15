@@ -34,10 +34,10 @@ public class NeoRSAKey extends NeoKey {
 	public static final byte ALGORITHM_ATTRIBUTES_LENGTH = (byte)6;
 
 	private short publicExponentSize;
+	private byte cipherMode;
 
 	/* borrowed from KeyStore */
-	private Cipher encryptCipher;
-	private Cipher decryptCipher;
+	private Cipher cipher;
 
 	public NeoRSAKey(short size) {
 		super();
@@ -53,9 +53,9 @@ public class NeoRSAKey extends NeoKey {
 		keyPair = new KeyPair(publicKey, privateKey);
 	}
 
-	public void init(Cipher[] ciphers) {
-		encryptCipher = ciphers[NeoKeyStore.ENCRYPT];
-		decryptCipher = ciphers[NeoKeyStore.DECRYPT];
+	public void init(Cipher cipher, byte cipherMode) {
+		this.cipher = cipher;
+		this.cipherMode = cipherMode;
 	}
 
 	public short getAlgorithmAttributes(byte[] buf, short off) {
@@ -79,6 +79,10 @@ public class NeoRSAKey extends NeoKey {
 		return true;
 	}
 
+	private void updateCipher() {
+		cipher.init(privateKey, cipherMode);
+	}
+
 	public void generateKey() {
 		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
 
@@ -86,8 +90,7 @@ public class NeoRSAKey extends NeoKey {
 			JCSystem.beginTransaction();
 
 		super.generateKey();
-		encryptCipher.init(privateKey, Cipher.MODE_ENCRYPT);
-		decryptCipher.init(privateKey, Cipher.MODE_DECRYPT);
+		updateCipher();
 
 		if (needTransaction)
 			JCSystem.commitTransaction();
@@ -212,6 +215,7 @@ public class NeoRSAKey extends NeoKey {
 		rsaPrivateKey.setDQ1(buf, off, dq1Length);
 		off += dq1Length;
 		rsaPublicKey.setModulus(buf, off, modulusLength);
+		updateCipher();
 	}
 
 	public short sign(byte[] buf, short off, short len) {
@@ -227,17 +231,17 @@ public class NeoRSAKey extends NeoKey {
 			return 0;
 		}
 
-		return encryptCipher.doFinal(buf, off, len, buf, (short)0);
+		return cipher.doFinal(buf, off, len, buf, (short)0);
 	}
 
 	public short decipher(byte[] buf, short off, short len) {
 		if (buf[off] != NeoPGPApplet.PSO_PAD_RSA)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		return decryptCipher.doFinal(buf, (short)(off + 1), (short)(len - 1), buf, (short)0);
+		return cipher.doFinal(buf, (short)(off + 1), (short)(len - 1), buf, (short)0);
 	}
 
 	public short authenticate(byte[] buf, short off, short len) {
-		return encryptCipher.doFinal(buf, off, len, buf, (short)0);
+		return cipher.doFinal(buf, off, len, buf, (short)0);
 	}
 }

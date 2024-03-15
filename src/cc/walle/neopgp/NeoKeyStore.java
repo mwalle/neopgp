@@ -6,14 +6,13 @@ import javacard.framework.ISOException;
 import javacardx.crypto.Cipher;
 
 public class NeoKeyStore {
-	public static final byte ENCRYPT = 0;
-	public static final byte DECRYPT = 1;
-
 	private short algorithmAttributesTag;
 	private NeoKey[] keyStore;
 
 	/* needed by RSA keys */
-	private Cipher[] ciphers;
+	Cipher signatureCipher;
+	Cipher decryptionCipher;
+	Cipher authenticationCipher;
 
 	public NeoKeyStore(short algorithmAttributesTag, short bitmask) {
 		NeoRSAKey rsakey;
@@ -41,12 +40,27 @@ public class NeoKeyStore {
 	}
 
 	private void addRSAKey(short n, NeoRSAKey key) {
-		if (ciphers == null) {
-			ciphers = new Cipher[2];
-			ciphers[ENCRYPT] = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
-			ciphers[DECRYPT] = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+		switch (algorithmAttributesTag) {
+		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_SIGNATURE:
+			if (signatureCipher == null)
+				signatureCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+			key.init(signatureCipher, Cipher.MODE_ENCRYPT);
+			break;
+		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_DECRYPTION:
+			if (decryptionCipher == null)
+				decryptionCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+			key.init(decryptionCipher, Cipher.MODE_DECRYPT);
+			break;
+		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION:
+			if (authenticationCipher == null)
+				authenticationCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
+			key.init(authenticationCipher, Cipher.MODE_ENCRYPT);
+			break;
+		default:
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+			break;
 		}
-		key.init(ciphers);
+
 		keyStore[n] = key;
 	}
 
