@@ -3,7 +3,6 @@ package cc.walle.neopgp;
 
 import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
-import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacard.security.KeyBuilder;
 import javacard.security.KeyPair;
@@ -84,16 +83,8 @@ public class NeoRSAKey extends NeoKey {
 	}
 
 	public void generateKey() {
-		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
-
-		if (needTransaction)
-			JCSystem.beginTransaction();
-
 		super.generateKey();
 		updateCipher();
-
-		if (needTransaction)
-			JCSystem.commitTransaction();
 	}
 
 	public short getPublicKey(byte[] buf, short off) {

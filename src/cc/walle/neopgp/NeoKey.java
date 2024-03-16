@@ -3,7 +3,6 @@ package cc.walle.neopgp;
 
 import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
-import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacard.security.CryptoException;
 import javacard.security.PublicKey;
@@ -61,11 +60,6 @@ public abstract class NeoKey {
 
 
 	public void importKey(byte[] buf, short off, short len) {
-		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
-
-		if (needTransaction)
-			JCSystem.beginTransaction();
-
 		try {
 			doImportKey(buf, off, len);
 		} catch (CryptoException e) {
@@ -73,19 +67,11 @@ public abstract class NeoKey {
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 		}
 		status = STATUS_IMPORTED;
-		if (needTransaction)
-			JCSystem.commitTransaction();
 	}
 
 	public void generateKey() {
-		boolean needTransaction = JCSystem.getTransactionDepth() == 0;
-
-		if (needTransaction)
-			JCSystem.beginTransaction();
 		keyPair.genKeyPair();
 		status = STATUS_GENERATED;
-		if (needTransaction)
-			JCSystem.commitTransaction();
 	}
 
 	public short getStatus(byte[] buf, short off) {

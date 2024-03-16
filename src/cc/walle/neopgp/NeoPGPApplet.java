@@ -1113,20 +1113,26 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_SIGNATURE_KEY, (short)0);
 		if (off > (short)0) {
+			JCSystem.beginTransaction();
 			zeroByteArray(digitalSignatureCounter);
 			signatureKey.importKey(buf, (short)0, lc);
+			JCSystem.commitTransaction();
 			return;
 		}
 
 		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_DECRYPTION_KEY, (short)0);
 		if (off > (short)0) {
+			JCSystem.beginTransaction();
 			decryptionKey.importKey(buf, (short)0, lc);
+			JCSystem.commitTransaction();
 			return;
 		}
 
 		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_AUTHENTICATION_KEY, (short)0);
 		if (off > (short)0) {
+			JCSystem.beginTransaction();
 			authenticationKey.importKey(buf, (short)0, lc);
+			JCSystem.commitTransaction();
 			return;
 		}
 
