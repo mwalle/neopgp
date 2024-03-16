@@ -210,6 +210,9 @@ public class NeoRSAKey extends NeoKey {
 	}
 
 	public short sign(byte[] buf, short off, short len) {
+		if (keyRef != NeoKey.SIGNATURE_KEY)
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+
 		switch (len) {
 		case DIGEST_INFO_SHA256_LENGTH:
 			break;
@@ -226,6 +229,9 @@ public class NeoRSAKey extends NeoKey {
 	}
 
 	public short decipher(byte[] buf, short off, short len) {
+		if (keyRef != NeoKey.DECRYPTION_KEY)
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+
 		if (buf[off] != NeoPGPApplet.PSO_PAD_RSA)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
@@ -233,6 +239,8 @@ public class NeoRSAKey extends NeoKey {
 	}
 
 	public short authenticate(byte[] buf, short off, short len) {
+		if (keyRef != NeoKey.AUTHENTICATION_KEY)
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
 		return cipher.doFinal(buf, off, len, buf, (short)0);
 	}
 }
