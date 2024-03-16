@@ -38,8 +38,8 @@ public class NeoRSAKey extends NeoKey {
 	/* borrowed from KeyStore */
 	private Cipher cipher;
 
-	public NeoRSAKey(short size) {
-		super();
+	public NeoRSAKey(byte keyRef, short size) {
+		super(keyRef);
 
 		/*
 		 * If the exponent in the public key is not pre-initialized,

@@ -168,9 +168,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		login = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH);
 		sex = new NeoFixedByteArray((short)1, DEFAULT_SEX);
 
-		signatureKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_SIGNATURE, keyBitmask);
-		decryptionKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_DECRYPTION, keyBitmask);
-		authenticationKeyStore = new NeoKeyStore(TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION, keyBitmask);
+		signatureKeyStore = new NeoKeyStore(NeoKey.SIGNATURE_KEY, keyBitmask);
+		decryptionKeyStore = new NeoKeyStore(NeoKey.DECRYPTION_KEY, keyBitmask);
+		authenticationKeyStore = new NeoKeyStore(NeoKey.AUTHENTICATION_KEY, keyBitmask);
 		signatureKey = signatureKeyStore.getDefaultKey();
 		decryptionKey = decryptionKeyStore.getDefaultKey();
 		authenticationKey = authenticationKeyStore.getDefaultKey();

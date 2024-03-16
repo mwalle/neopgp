@@ -34,8 +34,10 @@ public abstract class NeoKey {
 	protected NeoByteArray fingerprint = null;
 	protected NeoByteArray timestamp = null;
 	protected byte status;
+	protected byte keyRef;
 
-	public NeoKey() {
+	public NeoKey(byte keyRef) {
+		this.keyRef = keyRef;
 		status = STATUS_NOT_PRESENT;
 		fingerprint = new NeoFixedByteArray(NeoPGPApplet.FINGERPRINT_LENGTH);
 		timestamp = new NeoFixedByteArray(NeoPGPApplet.TIMESTAMP_LENGTH);

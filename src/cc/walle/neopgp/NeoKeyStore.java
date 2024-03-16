@@ -14,11 +14,8 @@ public class NeoKeyStore {
 	Cipher decryptionCipher;
 	Cipher authenticationCipher;
 
-	public NeoKeyStore(short algorithmAttributesTag, short bitmask) {
-		NeoRSAKey rsakey;
+	public NeoKeyStore(byte keyRef, short bitmask) {
 		short n = 0;
-
-		this.algorithmAttributesTag = algorithmAttributesTag;
 
 		bitmask &= 0x0007;
 		for (short i = (short)1; (i & (short)0x3ff) != 0; i <<= 1)
@@ -32,11 +29,26 @@ public class NeoKeyStore {
 
 		n = 0;
 		if ((bitmask & (short)0x0001) == (short)0x0001)
-			addRSAKey(n++, new NeoRSAKey((short)2048));
+			addRSAKey(n++, new NeoRSAKey(keyRef, (short)2048));
 		if ((bitmask & (short)0x0002) == (short)0x0002)
-			addRSAKey(n++, new NeoRSAKey((short)3072));
+			addRSAKey(n++, new NeoRSAKey(keyRef, (short)3072));
 		if ((bitmask & (short)0x0004) == (short)0x0004)
-			addRSAKey(n++, new NeoRSAKey((short)4096));
+			addRSAKey(n++, new NeoRSAKey(keyRef, (short)4096));
+
+		switch (keyRef) {
+		case NeoKey.SIGNATURE_KEY:
+			algorithmAttributesTag = NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_SIGNATURE;
+			break;
+		case NeoKey.DECRYPTION_KEY:
+			algorithmAttributesTag = NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_DECRYPTION;
+			break;
+		case NeoKey.AUTHENTICATION_KEY:
+			algorithmAttributesTag = NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION;
+			break;
+		default:
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+		}
+
 	}
 
 	private void addRSAKey(short n, NeoRSAKey key) {
