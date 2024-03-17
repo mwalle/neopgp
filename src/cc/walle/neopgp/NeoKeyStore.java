@@ -3,9 +3,17 @@ package cc.walle.neopgp;
 
 import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
+import javacard.security.KeyAgreement;
+import javacard.security.Signature;
 import javacardx.crypto.Cipher;
 
 public class NeoKeyStore {
+	public static final byte SHA1 = 0;
+	public static final byte SHA224 = 1;
+	public static final byte SHA256 = 2;
+	public static final byte SHA384 = 3;
+	public static final byte SHA512 = 4;
+
 	private short algorithmAttributesTag;
 	private NeoKey[] keyStore;
 	byte keyRef;
@@ -14,6 +22,11 @@ public class NeoKeyStore {
 	private Cipher signatureCipher;
 	private Cipher decryptionCipher;
 	private Cipher authenticationCipher;
+
+	/* needed by ECDSA keys */
+	private Signature[] signatureSignatures;
+	private KeyAgreement decryptionKeyAgreement;
+	private Signature[] authenticationSignatures;
 
 	public NeoKeyStore(byte keyRef, short bitmask) {
 		short n = 0;
@@ -69,6 +82,43 @@ public class NeoKeyStore {
 			if (authenticationCipher == null)
 				authenticationCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 			key.init(authenticationCipher, Cipher.MODE_ENCRYPT);
+			break;
+		default:
+			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+			break;
+		}
+
+		keyStore[n] = key;
+	}
+
+	private Signature[] createSignatures() {
+		Signature[] signatures = new Signature[5];
+
+		signatures[SHA1] = Signature.getInstance(Signature.ALG_ECDSA_SHA, false);
+		signatures[SHA224] = Signature.getInstance(Signature.ALG_ECDSA_SHA_224, false);
+		signatures[SHA256] = Signature.getInstance(Signature.ALG_ECDSA_SHA_256, false);
+		signatures[SHA384] = Signature.getInstance(Signature.ALG_ECDSA_SHA_384, false);
+		signatures[SHA512] = Signature.getInstance(Signature.ALG_ECDSA_SHA_512, false);
+
+		return signatures;
+	}
+
+	private void addECKey(short n, NeoECKey key) {
+		switch (keyRef) {
+		case NeoKey.SIGNATURE_KEY:
+			if (signatureSignatures == null)
+				signatureSignatures = createSignatures();
+			key.init(signatureSignatures);
+			break;
+		case NeoKey.DECRYPTION_KEY:
+			if (decryptionKeyAgreement == null)
+				decryptionKeyAgreement = KeyAgreement.getInstance(KeyAgreement.ALG_EC_SVDP_DH_PLAIN, false);
+			key.init(decryptionKeyAgreement);
+			break;
+		case NeoKey.AUTHENTICATION_KEY:
+			if (authenticationSignatures == null)
+				authenticationSignatures = createSignatures();
+			key.init(authenticationSignatures);
 			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_UNKNOWN);
