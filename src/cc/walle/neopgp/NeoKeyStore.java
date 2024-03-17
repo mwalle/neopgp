@@ -31,7 +31,8 @@ public class NeoKeyStore {
 	public NeoKeyStore(byte keyRef, short bitmask) {
 		short n = 0;
 
-		bitmask &= 0x0007;
+		bitmask &= 0x03f9;
+
 		for (short i = (short)1; (i & (short)0x3ff) != 0; i <<= 1)
 			if ((bitmask & i) == i)
 				n++;
@@ -49,6 +50,20 @@ public class NeoKeyStore {
 			addRSAKey(n++, new NeoRSAKey(keyRef, (short)3072));
 		if ((bitmask & (short)0x0004) == (short)0x0004)
 			addRSAKey(n++, new NeoRSAKey(keyRef, (short)4096));
+		if ((bitmask & (short)0x0008) == (short)0x0008)
+			addECKey(n++, new NeoSECP256R1Key(keyRef));
+		if ((bitmask & (short)0x0010) == (short)0x0010)
+			addECKey(n++, new NeoSECP384R1Key(keyRef));
+		if ((bitmask & (short)0x0020) == (short)0x0020)
+			addECKey(n++, new NeoSECP521R1Key(keyRef));
+		if ((bitmask & (short)0x0040) == (short)0x0040)
+			addECKey(n++, new NeoBrainpoolP256R1Key(keyRef));
+		if ((bitmask & (short)0x0080) == (short)0x0080)
+			addECKey(n++, new NeoBrainpoolP384R1Key(keyRef));
+		if ((bitmask & (short)0x0100) == (short)0x0100)
+			addECKey(n++, new NeoBrainpoolP512R1Key(keyRef));
+		if ((bitmask & (short)0x0200) == (short)0x0200)
+			addECKey(n++, new NeoSECP256K1Key(keyRef));
 
 		switch (keyRef) {
 		case NeoKey.SIGNATURE_KEY:
