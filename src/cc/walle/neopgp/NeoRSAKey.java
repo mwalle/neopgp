@@ -117,27 +117,16 @@ public class NeoRSAKey extends NeoKey {
 		}
 	}
 
-	public void doImportKey(byte[] buf, short off, short len) {
+	public void doImportKey(byte[] buf, short templateOffset, short templateLength,
+				short dataOffset, short dataLength) {
+		short off;
 		RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey)privateKey;
 		RSAPublicKey rsaPublicKey = (RSAPublicKey)publicKey;
-		short templateTLVLength;
-		short templateTLV, dataTLV, templateTLVOffset;
 		short exponentLength = 0, modulusLength = 0, pLength = 0;
 		short qLength = 0, pqLength = 0, dp1Length = 0, dq1Length = 0;
 
-		templateTLV = NeoBERParser.find(buf, off, NeoKey.BER_TAG_PRIVATE_KEY_TEMPLATE, (short)0);
-		if (templateTLV < (short)0)
-			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
-
-		dataTLV = NeoBERParser.findNext(buf, off, templateTLV, NeoKey.BER_TAG_PRIVATE_KEY_DATA, (short)0);
-		if (dataTLV < (short)0)
-			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
-
-		templateTLVLength = NeoBERParser.getLength(buf, templateTLV);
-		templateTLVOffset = NeoBERParser.getValueOffset(buf, templateTLV);
-
-		for (off = templateTLVOffset;
-		     off < (short)(templateTLVOffset + templateTLVLength);
+		for (off = templateOffset;
+		     off < (short)(templateOffset + templateLength);
 		     off = NeoBERParser.getValueOffset(buf, off)) {
 			switch (buf[off]) {
 			case TAG_PUBLIC_KEY_EXPONENT:
@@ -170,8 +159,11 @@ public class NeoRSAKey extends NeoKey {
 				dq1Length == (short)0)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		off = NeoBERParser.getValueOffset(buf, dataTLV);
+		if ((short)(exponentLength + pLength + qLength + pqLength +
+			    dp1Length + dq1Length + modulusLength) > dataLength)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
+		off = dataOffset;
 		rsaPublicKey.setExponent(buf, off, exponentLength);
 		off += exponentLength;
 		rsaPrivateKey.setP(buf, off, pLength);

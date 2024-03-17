@@ -46,7 +46,7 @@ public abstract class NeoKey {
 	public abstract boolean matchAlgorithmAttributes(byte[] buf, short off, short len);
 	public abstract short getAlgorithmAttributes(byte[] buf, short off);
 	public abstract short getPublicKey(byte[] buf, short off);
-	public abstract void doImportKey(byte[] buf, short off, short len);
+	public abstract void doImportKey(byte[] buf, short templateOffset, short templateLength, short dataOffset, short dataLength);
 	public abstract short getImportBufferSize();
 	public abstract void update();
 	public abstract short sign(byte[] buf, short off, short len);
@@ -61,9 +61,30 @@ public abstract class NeoKey {
 		timestamp.clear();
 	}
 
+	private void parseAndImportKey(byte[] buf, short off, short len) {
+		short tlv;
+		short templateOffset, templateLength;
+		short dataOffset, dataLength;
+
+		tlv = NeoBERParser.find(buf, off, NeoKey.BER_TAG_PRIVATE_KEY_TEMPLATE, (short)0);
+		if (tlv < (short)0)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		templateLength = NeoBERParser.getLength(buf, tlv);
+		templateOffset = NeoBERParser.getValueOffset(buf, tlv);
+
+		tlv = NeoBERParser.findNext(buf, off, tlv, NeoKey.BER_TAG_PRIVATE_KEY_DATA, (short)0);
+		if (tlv < (short)0)
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		dataLength = NeoBERParser.getLength(buf, tlv);
+		dataOffset = NeoBERParser.getValueOffset(buf, tlv);
+
+
+		doImportKey(buf, templateOffset, templateLength, dataOffset, dataLength);
+	}
+
 	public void importKey(byte[] buf, short off, short len) {
 		try {
-			doImportKey(buf, off, len);
+			parseAndImportKey(buf, off, len);
 			update();
 		} catch (CryptoException e) {
 			clear();
