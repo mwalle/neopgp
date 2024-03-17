@@ -48,6 +48,7 @@ public abstract class NeoKey {
 	public abstract short getPublicKey(byte[] buf, short off);
 	public abstract void doImportKey(byte[] buf, short off, short len);
 	public abstract short getImportBufferSize();
+	public abstract void update();
 	public abstract short sign(byte[] buf, short off, short len);
 	public abstract short decipher(byte[] buf, short off, short len);
 	public abstract short authenticate(byte[] buf, short off, short len);
@@ -64,6 +65,7 @@ public abstract class NeoKey {
 	public void importKey(byte[] buf, short off, short len) {
 		try {
 			doImportKey(buf, off, len);
+			update();
 		} catch (CryptoException e) {
 			clear();
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
@@ -73,6 +75,7 @@ public abstract class NeoKey {
 
 	public void generateKey() {
 		keyPair.genKeyPair();
+		update();
 		status = STATUS_GENERATED;
 	}
 

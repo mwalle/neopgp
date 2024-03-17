@@ -78,13 +78,8 @@ public class NeoRSAKey extends NeoKey {
 		return true;
 	}
 
-	private void updateCipher() {
+	public void update() {
 		cipher.init(privateKey, cipherMode);
-	}
-
-	public void generateKey() {
-		super.generateKey();
-		updateCipher();
 	}
 
 	public short getPublicKey(byte[] buf, short off) {
@@ -206,7 +201,6 @@ public class NeoRSAKey extends NeoKey {
 		rsaPrivateKey.setDQ1(buf, off, dq1Length);
 		off += dq1Length;
 		rsaPublicKey.setModulus(buf, off, modulusLength);
-		updateCipher();
 	}
 
 	public short sign(byte[] buf, short off, short len) {
