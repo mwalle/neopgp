@@ -408,15 +408,29 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private short getHistoricalBytes(byte[] buf, short off) {
+		byte tmp;
+
 		buf[off++] = (byte)0x00;
+
 		/* cTLV 0x73 */
 		buf[off++] = (byte)0x73;
 		buf[off++] = (byte)0x00;
 		buf[off++] = (byte)0x00;
-		buf[off++] = (byte)0x60;
+
+		tmp = (byte)(0 << 7) | /* Command chaining supported */
+			(byte)(0 << 5) | /* Extended length info in EF.ATR */
+			(byte)(0 << 3) | /* Logical channel number */
+			(byte)(0 << 0);  /* Maximal logical channels */
+
+		/* Extended length supported */
+		if (tmpBuffer != null)
+			tmp |= (byte)(1 << 6);
+		buf[off++] = tmp;
+
 		/* cTLV 0x31 */
 		buf[off++] = (byte)0x31;
 		buf[off++] = (byte)0xde;
+
 		/* LCS */
 		if (cardTerminated)
 			buf[off++] = (byte)0x03;
