@@ -10,9 +10,9 @@ public class NeoKeyStore {
 	private NeoKey[] keyStore;
 
 	/* needed by RSA keys */
-	Cipher signatureCipher;
-	Cipher decryptionCipher;
-	Cipher authenticationCipher;
+	private Cipher signatureCipher;
+	private Cipher decryptionCipher;
+	private Cipher authenticationCipher;
 
 	public NeoKeyStore(byte keyRef, short bitmask) {
 		short n = 0;
