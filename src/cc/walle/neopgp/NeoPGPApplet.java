@@ -320,7 +320,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	public void process(APDU apdu) {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte cla = buf[ISO7816.OFFSET_CLA];
 		byte ins = buf[ISO7816.OFFSET_INS];
 
@@ -516,7 +516,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		return off;
 	}
 
-	private short getApplicationRelatedData(byte buf[], short off) {
+	private short getApplicationRelatedData(byte[] buf, short off) {
 		short lengthOffset1, lengthOffset2, lengthOffset3;
 
 		off = setTag(buf, off, TAG_APPLICATION_RELATED_DATA);
@@ -551,7 +551,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		return off;
 	}
 
-	private short getCardholderRelatedData(byte buf[], short off) {
+	private short getCardholderRelatedData(byte[] buf, short off) {
 		short lengthOffset1, lengthOffset2;
 
 		off = setTag(buf, off, TAG_CARDHOLDER_RELATED_DATA);
@@ -591,7 +591,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 
 	private void processGetData(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short tag = Util.makeShort(p1, p2);
@@ -706,7 +706,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processPutData(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short tag = Util.makeShort(p1, p2);
@@ -832,7 +832,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processChangeReferenceData(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short lc, off;
@@ -863,7 +863,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processResetRetryCounter(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short lc, off, len;
@@ -889,7 +889,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processVerify(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short lc, off;
@@ -942,7 +942,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processActivateFile(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 
@@ -953,7 +953,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processTerminateDF(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 
@@ -975,7 +975,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processGenerateAsymmetricKeyPair(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short lc, off;
@@ -1024,14 +1024,22 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			break;
 		}
 
-		off = key.getPublicKey(tmpBuffer, (short)0);
-		apdu.setOutgoing();
-		apdu.setOutgoingLength(off);
-		apdu.sendBytesLong(tmpBuffer, (short)0, off);
+		if (tmpBuffer != null)
+			buf = tmpBuffer;
+
+		off = key.getPublicKey(buf, (short)0);
+
+		if (tmpBuffer != null) {
+			apdu.setOutgoing();
+			apdu.setOutgoingLength(off);
+			apdu.sendBytesLong(buf, (short)0, off);
+		} else {
+			apdu.setOutgoingAndSend((short)0, off);
+		}
 	}
 
 	private void processPerformSecurityOperation(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short op = Util.makeShort(p1, p2);
@@ -1065,7 +1073,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processInternalAuthenticate(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short lc, off;
@@ -1084,7 +1092,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private void processImportKey(APDU apdu) throws ISOException {
-		byte buf[] = apdu.getBuffer();
+		byte[] buf = apdu.getBuffer();
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short tag = Util.makeShort(p1, p2);
