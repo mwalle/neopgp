@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="all" name="NeoPGP Applet">
+<project basedir="." default="applet" name="NeoPGP Applet">
 
   <mkdir dir="lib" />
   <get src="https://github.com/martinpaljak/ant-javacard/releases/latest/download/ant-javacard.jar" dest="lib" skipexisting="true" />
@@ -14,14 +14,6 @@
   <property name="test.src.dir" value="test" />
 
   <taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="lib/ant-javacard.jar" />
-
-  <target name="all" depends="applet,javacardx-framework-tlv" />
-
-  <target name="javacardx-framework-tlv">
-    <javacard>
-      <cap output="javacardx.framework.tlv.cap" targetsdk="3.0.4" sources="${main.src.dir}" includes="javacardx/framework/tlv/*.java" package="javacardx.framework.tlv" aid="a000000062020803" version="1.0" exportmap="true" />
-    </javacard>
-  </target>
 
   <target name="applet">
     <javacard>

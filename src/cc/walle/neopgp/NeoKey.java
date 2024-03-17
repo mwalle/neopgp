@@ -61,7 +61,6 @@ public abstract class NeoKey {
 		timestamp.clear();
 	}
 
-
 	public void importKey(byte[] buf, short off, short len) {
 		try {
 			doImportKey(buf, off, len);

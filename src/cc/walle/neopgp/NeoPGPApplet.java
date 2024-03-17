@@ -8,7 +8,6 @@ import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
 import javacardx.apdu.ExtendedLength;
-import javacardx.framework.tlv.ConstructedBERTLV;
 
 public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short BUFFER_SIZE_MIN_LENGTH = (short)0x200;
@@ -1119,7 +1118,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		if (buf[(short)0] != (byte)TAG_EXTENDED_HEADER_LIST)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_SIGNATURE_KEY, (short)0);
+		off = NeoBERParser.find(buf, (short)0, BER_TAG_SIGNATURE_KEY, (short)0);
 		if (off > (short)0) {
 			JCSystem.beginTransaction();
 			zeroByteArray(digitalSignatureCounter);
@@ -1128,7 +1127,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			return;
 		}
 
-		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_DECRYPTION_KEY, (short)0);
+		off = NeoBERParser.find(buf, (short)0, BER_TAG_DECRYPTION_KEY, (short)0);
 		if (off > (short)0) {
 			JCSystem.beginTransaction();
 			decryptionKey.importKey(buf, (short)0, lc);
@@ -1136,7 +1135,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			return;
 		}
 
-		off = ConstructedBERTLV.find(buf, (short)0, BER_TAG_AUTHENTICATION_KEY, (short)0);
+		off = NeoBERParser.find(buf, (short)0, BER_TAG_AUTHENTICATION_KEY, (short)0);
 		if (off > (short)0) {
 			JCSystem.beginTransaction();
 			authenticationKey.importKey(buf, (short)0, lc);

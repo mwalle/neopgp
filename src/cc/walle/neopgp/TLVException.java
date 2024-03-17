@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-package javacardx.framework.tlv;
+package cc.walle.neopgp;
 
 import javacard.framework.CardRuntimeException;
 
@@ -18,7 +18,7 @@ public class TLVException extends CardRuntimeException {
 
 	private static TLVException theTLVException;
 
-	public TLVException(short reason) {
+	TLVException(short reason) {
 		super(reason);
 	}
 

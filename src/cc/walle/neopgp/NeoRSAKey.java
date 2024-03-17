@@ -9,9 +9,6 @@ import javacard.security.KeyPair;
 import javacard.security.RSAPrivateCrtKey;
 import javacard.security.RSAPublicKey;
 import javacardx.crypto.Cipher;
-import javacardx.framework.tlv.BERTLV;
-import javacardx.framework.tlv.ConstructedBERTLV;
-import javacardx.framework.tlv.PrimitiveBERTLV;
 
 public class NeoRSAKey extends NeoKey {
 	public static final byte IMPORT_FORMAT_CRT_W_MODULUS = 0x03;
@@ -128,54 +125,41 @@ public class NeoRSAKey extends NeoKey {
 		short exponentLength = 0, modulusLength = 0, pLength = 0;
 		short qLength = 0, pqLength = 0, dp1Length = 0, dq1Length = 0;
 
-		/*
-		 * Oh the horror. The contents of the 7F48 tag looks like BER
-		 * encoded but it's missing the actual content. That is then
-		 * part of the 5F48 tag. Even worse, the 7F48 tag refers to a
-		 * constructed one, but because the value is missing, it's not
-		 * and we cannot use the javacardx.framework.tlv utils. Or can
-		 * we...
-		 */
-		templateTLV = ConstructedBERTLV.find(buf, off, NeoKey.BER_TAG_PRIVATE_KEY_TEMPLATE, (short)0);
+		templateTLV = NeoBERParser.find(buf, off, NeoKey.BER_TAG_PRIVATE_KEY_TEMPLATE, (short)0);
 		if (templateTLV < (short)0)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		dataTLV = ConstructedBERTLV.findNext(buf, off, templateTLV, NeoKey.BER_TAG_PRIVATE_KEY_DATA, (short)0);
+		dataTLV = NeoBERParser.findNext(buf, off, templateTLV, NeoKey.BER_TAG_PRIVATE_KEY_DATA, (short)0);
 		if (dataTLV < (short)0)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		/*
-		 * Here be dragons. We clear the constructed bit so we can
-		 * actually use PrimitiveBERTLV.getValueOffset().
-		 */
-		templateTLVLength = BERTLV.getLength(buf, templateTLV);
-		buf[templateTLV] &= (byte)~0x20;
-		templateTLVOffset = PrimitiveBERTLV.getValueOffset(buf, templateTLV);
+		templateTLVLength = NeoBERParser.getLength(buf, templateTLV);
+		templateTLVOffset = NeoBERParser.getValueOffset(buf, templateTLV);
 
 		for (off = templateTLVOffset;
 		     off < (short)(templateTLVOffset + templateTLVLength);
-		     off = PrimitiveBERTLV.getValueOffset(buf, off)) {
+		     off = NeoBERParser.getValueOffset(buf, off)) {
 			switch (buf[off]) {
 			case TAG_PUBLIC_KEY_EXPONENT:
-				exponentLength = BERTLV.getLength(buf, off);
+				exponentLength = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PRIVATE_KEY_P:
-				pLength = BERTLV.getLength(buf, off);
+				pLength = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PRIVATE_KEY_Q:
-				qLength = BERTLV.getLength(buf, off);
+				qLength = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PRIVATE_KEY_PQ:
-				pqLength = BERTLV.getLength(buf, off);
+				pqLength = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PRIVATE_KEY_DP1:
-				dp1Length = BERTLV.getLength(buf, off);
+				dp1Length = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PRIVATE_KEY_DQ1:
-				dq1Length = BERTLV.getLength(buf, off);
+				dq1Length = NeoBERParser.getLength(buf, off);
 				break;
 			case TAG_PUBLIC_KEY_MODULUS:
-				modulusLength = BERTLV.getLength(buf, off);
+				modulusLength = NeoBERParser.getLength(buf, off);
 				break;
 			}
 		}
@@ -186,7 +170,7 @@ public class NeoRSAKey extends NeoKey {
 				dq1Length == (short)0)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		off = PrimitiveBERTLV.getValueOffset(buf, dataTLV);
+		off = NeoBERParser.getValueOffset(buf, dataTLV);
 
 		rsaPublicKey.setExponent(buf, off, exponentLength);
 		off += exponentLength;
