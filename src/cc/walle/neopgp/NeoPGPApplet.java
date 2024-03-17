@@ -122,7 +122,11 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		(byte)0x30,
 	};
 
+	public static final short CFG_NO_KEYGEN_TRANSACTION = (short)0x0001;
+
 	private boolean cardTerminated;
+	private short keyBitmask = (short)0x0001;
+	private short cardConfiguration;
 
 	private NeoPIN userPIN = null;
 	private NeoPIN adminPIN = null;
@@ -152,9 +156,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	private byte[] tmpBuffer = null;
 
 	private NeoPGPApplet(byte[] buf, short off, short len) {
-		short keyBitmask = (short)0x0001;
 		if (len >= (short)2)
 			keyBitmask = Util.getShort(buf, off);
+		if (len >= (short)4)
+			cardConfiguration = Util.getShort(buf, (short)(off + 2));
 
 		userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN, (byte)2);
 		adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN);
@@ -198,6 +203,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			return null;
 
 		return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
+	}
+
+	private boolean hasConfiguration(short mask) {
+		return (cardConfiguration & mask) != (short)0;
 	}
 
 	public static void install(byte[] buf, short off, byte len) {
@@ -1025,8 +1034,20 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		switch (p1) {
 		case GENKEY_P1_GENERATE:
 			adminPIN.assertValidated();
-			JCSystem.beginTransaction();
+
+			/*
+			 * Some cards (e.g. ACOSJ) doesn't support transaction
+			 * during key generation.
+			 */
+			if (!hasConfiguration(CFG_NO_KEYGEN_TRANSACTION))
+				JCSystem.beginTransaction();
+
 			key.generateKey();
+
+			/* Protect at least the signature counter. */
+			if (hasConfiguration(CFG_NO_KEYGEN_TRANSACTION))
+				JCSystem.beginTransaction();
+
 			if (key == signatureKey)
 				zeroByteArray(digitalSignatureCounter);
 			JCSystem.commitTransaction();
