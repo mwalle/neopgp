@@ -1138,31 +1138,17 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		if (buf[off] != (byte)TAG_EXTENDED_HEADER_LIST)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		tlv = NeoBERParser.find(buf, off, BER_TAG_SIGNATURE_KEY, (short)0);
-		if (tlv >= (short)0) {
-			JCSystem.beginTransaction();
+		JCSystem.beginTransaction();
+		if (NeoBERParser.find(buf, off, BER_TAG_SIGNATURE_KEY, (short)0) >= (short)0) {
 			zeroByteArray(digitalSignatureCounter);
 			signatureKey.importKey(buf, off, lc);
-			JCSystem.commitTransaction();
-			return;
-		}
-
-		tlv = NeoBERParser.find(buf, off, BER_TAG_DECRYPTION_KEY, (short)0);
-		if (tlv >= (short)0) {
-			JCSystem.beginTransaction();
+		} else if (NeoBERParser.find(buf, off, BER_TAG_DECRYPTION_KEY, (short)0) >= (short)0) {
 			decryptionKey.importKey(buf, off, lc);
-			JCSystem.commitTransaction();
-			return;
-		}
-
-		tlv = NeoBERParser.find(buf, off, BER_TAG_AUTHENTICATION_KEY, (short)0);
-		if (tlv >= (short)0) {
-			JCSystem.beginTransaction();
+		} else if (NeoBERParser.find(buf, off, BER_TAG_AUTHENTICATION_KEY, (short)0) >= (short)0) {
 			authenticationKey.importKey(buf, off, lc);
-			JCSystem.commitTransaction();
-			return;
+		} else {
+			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 		}
-
-		ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+		JCSystem.commitTransaction();
 	}
 }
