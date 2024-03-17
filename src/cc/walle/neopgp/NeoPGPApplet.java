@@ -10,8 +10,6 @@ import javacard.framework.Util;
 import javacardx.apdu.ExtendedLength;
 
 public class NeoPGPApplet extends Applet implements ExtendedLength {
-	public static final short BUFFER_SIZE_MIN_LENGTH = (short)0x200;
-
 	public static final byte INS_SELECT_DATA = (byte)0xa5;
 	public static final byte INS_GET_DATA = (byte)0xca;
 	public static final byte INS_GET_NEXT_DATA = (byte)0xcc;
@@ -183,7 +181,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	private byte[] createTmpBuffer() {
-		short size = BUFFER_SIZE_MIN_LENGTH;
+		short size = 0;
 		short tmp;
 
 		tmp = signatureKeyStore.getImportBufferSize();
@@ -195,6 +193,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		tmp = authenticationKeyStore.getImportBufferSize();
 		if (size < tmp)
 			size = tmp;
+
+		if (size == 0)
+			return null;
 
 		return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
 	}
@@ -1095,8 +1096,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		byte p1 = buf[ISO7816.OFFSET_P1];
 		byte p2 = buf[ISO7816.OFFSET_P2];
 		short tag = Util.makeShort(p1, p2);
-		short lc, pos = 0, len;
-		short off;
+		short len, lc, off, tlv;
 
 		if (p1 != (byte)0x3f || p2 != (byte)0xff)
 			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
@@ -1104,41 +1104,47 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		len = apdu.setIncomingAndReceive();
 		lc = apdu.getIncomingLength();
 		off = apdu.getOffsetCdata();
-		do {
-			Util.arrayCopyNonAtomic(buf, off, tmpBuffer, pos, len);
-			pos += len;
-		} while ((len = apdu.receiveBytes(off)) != (short)0);
 
-		if (pos != lc)
+		if (tmpBuffer != null) {
+			short pos = 0;
+			do {
+				Util.arrayCopyNonAtomic(buf, off, tmpBuffer, pos, len);
+				pos += len;
+			} while ((len = apdu.receiveBytes(off)) != (short)0);
+			off = (short)0;
+			len = pos;
+			buf = tmpBuffer;
+		}
+
+		if (len != lc)
 			ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);
 
 		adminPIN.assertValidated();
 
-		buf = tmpBuffer;
-		if (buf[(short)0] != (byte)TAG_EXTENDED_HEADER_LIST)
+		if (buf[off] != (byte)TAG_EXTENDED_HEADER_LIST)
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 
-		off = NeoBERParser.find(buf, (short)0, BER_TAG_SIGNATURE_KEY, (short)0);
-		if (off > (short)0) {
+		tlv = NeoBERParser.find(buf, off, BER_TAG_SIGNATURE_KEY, (short)0);
+		if (tlv >= (short)0) {
 			JCSystem.beginTransaction();
 			zeroByteArray(digitalSignatureCounter);
-			signatureKey.importKey(buf, (short)0, lc);
+			signatureKey.importKey(buf, off, lc);
 			JCSystem.commitTransaction();
 			return;
 		}
 
-		off = NeoBERParser.find(buf, (short)0, BER_TAG_DECRYPTION_KEY, (short)0);
-		if (off > (short)0) {
+		tlv = NeoBERParser.find(buf, off, BER_TAG_DECRYPTION_KEY, (short)0);
+		if (tlv >= (short)0) {
 			JCSystem.beginTransaction();
-			decryptionKey.importKey(buf, (short)0, lc);
+			decryptionKey.importKey(buf, off, lc);
 			JCSystem.commitTransaction();
 			return;
 		}
 
-		off = NeoBERParser.find(buf, (short)0, BER_TAG_AUTHENTICATION_KEY, (short)0);
-		if (off > (short)0) {
+		tlv = NeoBERParser.find(buf, off, BER_TAG_AUTHENTICATION_KEY, (short)0);
+		if (tlv >= (short)0) {
 			JCSystem.beginTransaction();
-			authenticationKey.importKey(buf, (short)0, lc);
+			authenticationKey.importKey(buf, off, lc);
 			JCSystem.commitTransaction();
 			return;
 		}
