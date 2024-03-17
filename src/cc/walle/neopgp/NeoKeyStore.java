@@ -8,6 +8,7 @@ import javacardx.crypto.Cipher;
 public class NeoKeyStore {
 	private short algorithmAttributesTag;
 	private NeoKey[] keyStore;
+	byte keyRef;
 
 	/* needed by RSA keys */
 	private Cipher signatureCipher;
@@ -25,6 +26,7 @@ public class NeoKeyStore {
 		/* At least one key is needed */
 		if (n == 0)
 			ISOException.throwIt(ISO7816.SW_UNKNOWN);
+		this.keyRef = keyRef;
 		keyStore = new NeoKey[n];
 
 		n = 0;
@@ -52,18 +54,18 @@ public class NeoKeyStore {
 	}
 
 	private void addRSAKey(short n, NeoRSAKey key) {
-		switch (algorithmAttributesTag) {
-		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_SIGNATURE:
+		switch (keyRef) {
+		case NeoKey.SIGNATURE_KEY:
 			if (signatureCipher == null)
 				signatureCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 			key.init(signatureCipher, Cipher.MODE_ENCRYPT);
 			break;
-		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_DECRYPTION:
+		case NeoKey.DECRYPTION_KEY:
 			if (decryptionCipher == null)
 				decryptionCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 			key.init(decryptionCipher, Cipher.MODE_DECRYPT);
 			break;
-		case NeoPGPApplet.TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION:
+		case NeoKey.AUTHENTICATION_KEY:
 			if (authenticationCipher == null)
 				authenticationCipher = Cipher.getInstance(Cipher.ALG_RSA_PKCS1, false);
 			key.init(authenticationCipher, Cipher.MODE_ENCRYPT);
