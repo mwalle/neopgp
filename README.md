@@ -34,7 +34,7 @@ outside of an object constructor and all objects are created during the
 - [x] Generate keys on card
 - [x] Key algorithm changable
 - [x] Key import
-- [ ] Support for ECC keys
+- [x] Support for ECC keys
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
 - [ ] KDF support
