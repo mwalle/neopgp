@@ -421,8 +421,20 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		/* cTLV 0x73 */
 		buf[off++] = (byte)0x73;
-		buf[off++] = (byte)0x00;
-		buf[off++] = (byte)0x00;
+		buf[off++] =
+			(byte)(1 << 7) | /* Full DF selection */
+			(byte)(0 << 6) | /* no Partial DF selection */
+			(byte)(0 << 5) | /* no DF by path */
+			(byte)(0 << 4) | /* no DF by file identifier */
+			(byte)(0 << 3) | /* no Implicit DF selection */
+			(byte)(0 << 2) | /* no Short EF identifier support */
+			(byte)(0 << 1) | /* no Record number support */
+			(byte)(0 << 0);  /* no Record identifier support */
+		buf[off++] =
+			(byte)(0 << 7) | /* no EFs of TLV supported */
+			(byte)(0 << 5) | /* One time write */
+			(byte)(0 << 4) | /* FF used for padding in TLV */
+			(byte)(1 << 0);  /* Data unit size: 1 byte */
 
 		tmp = (byte)(0 << 7) | /* Command chaining supported */
 			(byte)(0 << 5) | /* Extended length info in EF.ATR */
@@ -436,7 +448,13 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		/* cTLV 0x31 */
 		buf[off++] = (byte)0x31;
-		buf[off++] = (byte)0xde;
+		buf[off++] =
+			(byte)(1 << 7) | /* Full AID selection */
+			(byte)(0 << 6) | /* no Partial AID selection */
+			(byte)(0 << 5) | /* no BER-TLV in EF.DIR */
+			(byte)(0 << 4) | /* no BER-TLV in EF.ATR */
+			(byte)(2 << 1) | /* GET DATA command */
+			(byte)(0 << 0);  /* MF */
 
 		/* LCS */
 		if (cardTerminated)
