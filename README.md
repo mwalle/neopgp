@@ -71,6 +71,36 @@ install the `NeoPGPApplet.cap` onto your smart card. E.g.
 java gp.jar -install NeoPGPApplet.cap
 ```
 
+### Configuration Parameters
+
+NeoPGP is highly configurable. During applet installation you can choose the
+supported key and quirks that are needed for your card, can be enabled.
+
+| Parameter Bitmask | Description             |
+| ----------------- | ----------------------- |
+|        `00010000` | RSA-2048 support        |
+|        `00020000` | RSA-3072 support        |
+|        `00040000` | RSA-4096 support        |
+|        `00080000` | NIST P-256 support      |
+|        `00100000` | NIST P-384 support      |
+|        `00200000` | NIST P-521 support      |
+|        `00400000` | Brainpool P-256 support |
+|        `00800000` | Brainpool P-384 support |
+|        `01000000` | Brainpool P-512 support |
+|        `02000000` | secp256k1 support       |
+|        `00000001` | Disable transaction during key generation |
+
+### Working Cards
+
+| Java Card               | ATR | Parameters | Notes |
+| ----------------------- | --- | ---------- | ----- |
+| JCOP J3R180 (DI)        |     | `03f90000` | |
+| JCOP J3R180 4K RSA (DI) |     | `03ff0000` | [1] |
+| ACOSJ 40K (DI)          |     | `00d80001` | [2], [3] |
+
+- [1]: Needs special pre-personalization.
+- [2]: Only ECC, because no ExtendedLength support.
+- [3]: ECC up to 384bits.
 
 ## License
 
