@@ -1139,7 +1139,8 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 
 		userPIN.isValidated(USER_PIN_MODE_NORMAL);
-		authenticationKey.authenticate(buf, off, lc);
+		off = authenticationKey.authenticate(buf, off, lc);
+		apdu.setOutgoingAndSend((short)0, off);
 	}
 
 	private void processImportKey(APDU apdu) throws ISOException {
