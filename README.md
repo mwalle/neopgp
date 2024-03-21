@@ -34,6 +34,7 @@ outside of an object constructor and all objects are created during the
 - [x] Generate keys on card
 - [x] Key algorithm changable
 - [x] Key import
+- [x] Support for RSA keys
 - [x] Support for ECC keys
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
@@ -92,13 +93,13 @@ supported key and quirks that are needed for your card, can be enabled.
 
 ### Working Cards
 
-| Java Card               | ATR | Parameters | Notes |
-| ----------------------- | --- | ---------- | ----- |
-| JCOP J3R180 (DI)        |     | `03f90000` | |
-| JCOP J3R180 4K RSA (DI) |     | `03ff0000` | [1] |
-| ACOSJ 40K (DI)          |     | `00d80001` | [2], [3] |
+| Java Card               | Parameters | Notes |
+| ----------------------- | ---------- | ----- |
+| JCOP J3R180 (DI)        | `03f90000` | [1]   |
+| JCOP J3R180 4K RSA (DI) | `03ff0000` | [1]   |
+| ACOSJ 40K (DI)          | `00d80001` | [2], [3] |
 
-- [1]: Needs special pre-personalization.
+- [1]: 3k/4k-RSA needs special pre-personalization and is not always available.
 - [2]: Only ECC, because no ExtendedLength support.
 - [3]: ECC up to 384bits.
 
