@@ -40,8 +40,50 @@ public abstract class JcardsimTestCase {
 		simulator.selectApplet(appletAID);
 	}
 
+	/**
+	 * Sends the default admin PIN.
+	 */
 	public void admin() {
-		assertResponseOK("00200083083132333435363738");
+		assertResponseOK("00200083 08 3132333435363738");
+	}
+
+	/**
+	 * Changes the signature key to RSA-2048.
+	 *
+	 * @param keyRef Key ID, 1 for SIG, 2 for DEC, 3 for AUT key.
+	 */
+	public void changeKey(int keyRef, int keyType) {
+		String cmd, typeAndOID;
+
+		switch (keyRef) {
+		case NeoKey.SIGNATURE_KEY:
+			cmd = "00DA00C1";
+			break;
+		case NeoKey.DECRYPTION_KEY:
+			cmd = "00DA00C2";
+			break;
+		case NeoKey.AUTHENTICATION_KEY:
+			cmd = "00DA00C3";
+			break;
+		default:
+			throw new RuntimeException();
+		}
+
+		switch (keyType) {
+		case NeoKey.ALGORITHM_ID_RSA:
+			typeAndOID = "06 010800001100";
+			break;
+		case NeoKey.ALGORITHM_ID_ECDH:
+			typeAndOID = "0A 122A8648CE3D030107FF";
+			break;
+		case NeoKey.ALGORITHM_ID_ECDSA:
+			typeAndOID = "0A 132A8648CE3D030107FF";
+			break;
+		default:
+			throw new RuntimeException();
+		}
+
+		assertResponseOK(cmd + typeAndOID);
 	}
 
 	public ResponseAPDU transmit(String command) {
