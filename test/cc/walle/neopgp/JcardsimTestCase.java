@@ -90,7 +90,10 @@ public abstract class JcardsimTestCase {
 	}
 
 	public void assertResponseOK(String command) {
-		assertEquals(ISO7816.SW_NO_ERROR & 0xffff, transmit(command).getSW());
+		int status = (short)transmit(command).getSW() & 0xffff;
+
+		assertTrue(String.format("Status was %04X", status),
+			(ISO7816.SW_NO_ERROR & 0xffff) == status);
 	}
 
 	public void assertResponseStatus(int expected, String command) {
