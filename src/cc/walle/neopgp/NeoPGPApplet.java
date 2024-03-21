@@ -123,7 +123,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short CFG_NO_KEYGEN_TRANSACTION = (short)0x0001;
 
 	private boolean cardTerminated;
-	private short keyBitmask = (short)0x0001;
+	private short keyBitmask = (short)0x0008;
 	private short cardConfiguration;
 
 	private NeoPIN userPIN = null;
