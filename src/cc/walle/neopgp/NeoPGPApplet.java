@@ -105,21 +105,19 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short SW_REFERENCE_DATA_NOT_FOUND = (short)0x6a88;
 
 	public static final byte[] DEFAULT_USER_PIN = {
-		(byte)0x31, (byte)0x32, (byte)0x33, (byte)0x34,
-		(byte)0x35, (byte)0x36
+		'1', '2', '3', '4', '5', '6',
 	};
 
 	public static final byte[] DEFAULT_ADMIN_PIN = {
-		(byte)0x31, (byte)0x32, (byte)0x33, (byte)0x34,
-		(byte)0x35, (byte)0x36, (byte)0x37, (byte)0x38
+		'1', '2', '3', '4', '5', '6', '7', '8',
 	};
 
 	public static final byte[] DEFAULT_LANGUAGE = {
-		(byte)0x65, (byte)0x6e,
+		'e', 'n',
 	};
 
 	public static final byte[] DEFAULT_SEX = {
-		(byte)0x30,
+		'0',
 	};
 
 	public static final short CFG_NO_KEYGEN_TRANSACTION = (short)0x0001;
