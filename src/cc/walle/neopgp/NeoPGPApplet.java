@@ -559,33 +559,60 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		short lengthOffset1, lengthOffset2, lengthOffset3;
 
 		off = setTag(buf, off, TAG_APPLICATION_RELATED_DATA);
-		off = lengthOffset1 = prepareLength1(buf, off);
+		off = lengthOffset1 = prepareLength2(buf, off);
+
+		off = setTag(buf, off, TAG_AID);
+		off = lengthOffset2 = prepareLength1(buf, off);
+		off = JCSystem.getAID().getBytes(buf, off);
+		setPreparedLength1(buf, off, lengthOffset2);
+
+		off = setTag(buf, off, TAG_HISTORICAL_BYTES);
+		off = lengthOffset2 = prepareLength1(buf, off);
+		off = getHistoricalBytes(buf, off);
+		setPreparedLength1(buf, off, lengthOffset2);
+
+		off = setTag(buf, off, TAG_EXTENDED_LENGTH_INFORMATION);
+		off = lengthOffset2 = prepareLength1(buf, off);
+		off = getExtendedLengthInformation(buf, off);
+		setPreparedLength1(buf, off, lengthOffset2);
+
 		off = setTag(buf, off, TAG_DISCRETIONARY_DATA_OBJECTS);
 		off = lengthOffset2 = prepareLength1(buf, off);
+
 		off = setTag(buf, off, TAG_EXTENDED_CAPABILITIES);
 		off = lengthOffset3 = prepareLength1(buf, off);
 		off = getExtendedCapabilities(buf, off);
 		setPreparedLength1(buf, off, lengthOffset3);
+
 		off = setTag(buf, off, TAG_ALGORITHM_ATTRIBUTES_SIGNATURE);
 		off = lengthOffset3 = prepareLength1(buf, off);
 		off = signatureKey.getAlgorithmAttributes(buf, off);
 		setPreparedLength1(buf, off, lengthOffset3);
+
 		off = setTag(buf, off, TAG_ALGORITHM_ATTRIBUTES_DECRYPTION);
 		off = lengthOffset3 = prepareLength1(buf, off);
 		off = decryptionKey.getAlgorithmAttributes(buf, off);
 		setPreparedLength1(buf, off, lengthOffset3);
+
 		off = setTag(buf, off, TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION);
 		off = lengthOffset3 = prepareLength1(buf, off);
 		off = authenticationKey.getAlgorithmAttributes(buf, off);
 		setPreparedLength1(buf, off, lengthOffset3);
+
+		off = setTag(buf, off, TAG_PW_STATUS_BYTES);
+		off = lengthOffset3 = prepareLength1(buf, off);
+		off = getPWStatusBytes(buf, off);
+		setPreparedLength1(buf, off, lengthOffset3);
+
 		off = setTag(buf, off, TAG_KEY_FINGERPRINTS);
 		off = lengthOffset3 = prepareLength1(buf, off);
 		off = signatureKey.getFingerprint(buf, off);
 		off = decryptionKey.getFingerprint(buf, off);
 		off = authenticationKey.getFingerprint(buf, off);
 		setPreparedLength1(buf, off, lengthOffset3);
+
 		setPreparedLength1(buf, off, lengthOffset2);
-		setPreparedLength1(buf, off, lengthOffset1);
+		setPreparedLength2(buf, off, lengthOffset1);
 
 		return off;
 	}
