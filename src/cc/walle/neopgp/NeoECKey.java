@@ -96,6 +96,8 @@ public abstract class NeoECKey extends NeoKey {
 	}
 
 	public boolean matchAlgorithmAttributes(byte[] buf, short off, short len) {
+		if (len < (short)(oid.length + 1))
+			return false;
 		if (buf[off] != NeoKey.ALGORITHM_ID_ECDSA &&
 			buf[off] != NeoKey.ALGORITHM_ID_ECDH)
 			return false;
