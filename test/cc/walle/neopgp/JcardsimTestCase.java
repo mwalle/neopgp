@@ -14,7 +14,7 @@ public abstract class JcardsimTestCase {
 	Simulator simulator;
 	AID appletAID = AIDUtil.create("D276000124010304FFFF000000000000");
 	byte[] info = ByteUtil.byteArray("00");
-	byte[] params = ByteUtil.byteArray("0001");
+	byte[] params = ByteUtil.byteArray("0009");
 
    	public JcardsimTestCase() {
 		byte[] buf = new byte[32];

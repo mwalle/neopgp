@@ -7,8 +7,17 @@ import javacard.framework.ISO7816;
 import org.junit.Test;
 
 public class KeyImportTest extends JcardsimTestCase {
-	String importPrivateKey =
-		"00 DB 3F FF 00 03 A6 4D 82 03 A2 B8 00 7F 48 15 91 03 92" +
+	String importECPrivateKey =
+		"00 DB 3F FF 6F 4D 6D B6 00 7F 48 04 92 20 99 41 5F 48 61" +
+		"AB AB 99 96 EA AF B9 3D 7F E0 D1 EB 24 9D F8 74 3F 61 0E" +
+		"61 51 D3 00 CB A8 D9 FF F2 4A 55 B2 45 04 F4 DD 4A 3E D9" +
+		"0B 08 59 6D EB E3 77 63 4D 83 97 E7 80 D8 D5 2E C6 49 FC" +
+		"D6 A3 06 2A 7D 1D 9E 7F 1C 3B 61 69 8F A3 A2 5C AB 81 CD" +
+		"94 8C 3C E7 07 AF 9C BC B1 AC 20 88 DA 31 46 CB 30 F7 56" +
+		"CD D1";
+
+	String importRSAPrivateKey =
+		"00 DB 3F FF 00 03 A6 4D 82 03 A2 B6 00 7F 48 15 91 03 92" +
 		"81 80 93 81 80 94 81 80 95 81 80 96 81 80 97 82 01 00 5F" +
 		"48 82 03 83 01 00 01 C1 2F BF 1B B2 75 C6 B0 8A F0 F6 9E" +
 		"1F 28 0D 4E CB C3 76 47 B8 DA E0 5D 48 30 5E D0 3A 72 55" +
@@ -61,12 +70,12 @@ public class KeyImportTest extends JcardsimTestCase {
 
 	@Test public void importRSAKey() {
 		admin();
-		assertResponseOK(importPrivateKey);
+		changeKey(NeoKey.SIGNATURE_KEY, NeoKey.ALGORITHM_ID_RSA);
+		assertResponseOK(importRSAPrivateKey);
 	}
 
 	@Test public void importRSAKeyAndCheckPublicKey() {
-		admin();
-		assertResponseOK(importPrivateKey);
+		importRSAKey();
 		assertResponseData(
 			"7F4982010981820100A95F3379870BE4303D524D646BA4D777ACE2A837027A02" +
 			"BDDD8BB098123A1E867D193179A3F243AB1F47C8AF9867CCE7C022A7E831FE28" +
@@ -77,6 +86,12 @@ public class KeyImportTest extends JcardsimTestCase {
 			"AC1AC928872B5E8412F361F28175CF5ED20C5C6A946AEB24086ED41C17EAED3E" +
 			"6A40BC10377017E00A03D741853B710884825A7E2E67EE8A7C8C134675734122" +
 			"D504D13743854F537F8203010001",
-			"00478100000002B800010E");
+			"00478100000002B600010E");
+	}
+
+	@Test public void importECKey() {
+		admin();
+		changeKey(NeoKey.SIGNATURE_KEY, NeoKey.ALGORITHM_ID_ECDSA);
+		assertResponseOK(importECPrivateKey);
 	}
 }
