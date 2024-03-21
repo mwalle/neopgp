@@ -217,7 +217,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		NeoPGPApplet app = new NeoPGPApplet(buf, (short)(paramsOffset + 1), paramsLength);
 
-		app.register();
+		app.register(buf, (short)(off + 1), buf[off]);
 		app.reset();
 	}
 
