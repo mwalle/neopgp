@@ -12,8 +12,7 @@ import javax.smartcardio.ResponseAPDU;
 public abstract class JcardsimTestCase {
 
 	Simulator simulator;
-	//AID appletAID = AIDUtil.create("d27600012401");
-	AID appletAID = AIDUtil.create("d276000124010304ffff000000000000");
+	AID appletAID = AIDUtil.create("D276000124010304FFFF000000000000");
 	byte[] info = ByteUtil.byteArray("00");
 	byte[] params = ByteUtil.byteArray("0001");
 
