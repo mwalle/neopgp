@@ -830,22 +830,40 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			break;
 		case TAG_ALGORITHM_ATTRIBUTES_SIGNATURE:
 			adminPIN.assertValidated();
-			JCSystem.beginTransaction();
-			signatureKey = signatureKeyStore.setAlgorithmAttributes(buf, off, lc);
-			JCSystem.commitTransaction();
-			break;
+			{
+				NeoKey newKey;
+				newKey = signatureKeyStore.setAlgorithmAttributes(buf, off, lc);
+				if (newKey == null)
+					ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+				JCSystem.beginTransaction();
+				signatureKey.clear();
+				signatureKey = newKey;
+				JCSystem.commitTransaction();
+			} break;
 		case TAG_ALGORITHM_ATTRIBUTES_DECRYPTION:
 			adminPIN.assertValidated();
-			JCSystem.beginTransaction();
-			decryptionKey = decryptionKeyStore.setAlgorithmAttributes(buf, off, lc);
-			JCSystem.commitTransaction();
-			break;
+			{
+				NeoKey newKey;
+				newKey = decryptionKeyStore.setAlgorithmAttributes(buf, off, lc);
+				if (newKey == null)
+					ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+				JCSystem.beginTransaction();
+				decryptionKey.clear();
+				decryptionKey = newKey;
+				JCSystem.commitTransaction();
+			} break;
 		case TAG_ALGORITHM_ATTRIBUTES_AUTHENTICATION:
 			adminPIN.assertValidated();
-			JCSystem.beginTransaction();
-			authenticationKey = authenticationKeyStore.setAlgorithmAttributes(buf, off, lc);
-			JCSystem.commitTransaction();
-			break;
+			{
+				NeoKey newKey;
+				newKey = authenticationKeyStore.setAlgorithmAttributes(buf, off, lc);
+				if (newKey == null)
+					ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+				JCSystem.beginTransaction();
+				authenticationKey.clear();
+				authenticationKey = newKey;
+				JCSystem.commitTransaction();
+			} break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			break;

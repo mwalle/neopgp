@@ -182,11 +182,9 @@ public class NeoKeyStore {
 		for (short i = 0; i < keyStore.length; i++) {
 			NeoKey key = keyStore[i];
 
-			key.clear();
 			if (key.matchAlgorithmAttributes(buf, off, len))
 				return key;
 		}
-		ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 		return null;
 	}
 }
