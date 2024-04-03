@@ -191,11 +191,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		for (byte i = 0; i < caFingerprints.length; i++)
 			caFingerprints[i] = new NeoFixedByteArray(FINGERPRINT_LENGTH);
 		digitalSignatureCounter = new byte[3];
-
-		tmpBuffer = createTmpBuffer();
+		createTmpBuffer();
 	}
 
-	private byte[] createTmpBuffer() {
+	private void createTmpBuffer() {
 		short size = 0;
 		short tmp;
 
@@ -209,10 +208,8 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		if (size < tmp)
 			size = tmp;
 
-		if (size == 0)
-			return null;
-
-		return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
+		if (size != 0)
+			tmpBuffer = JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
 	}
 
 	private boolean hasConfiguration(short mask) {
