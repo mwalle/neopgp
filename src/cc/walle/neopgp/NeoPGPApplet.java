@@ -286,16 +286,16 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	}
 
 	public static void install(byte[] buf, short off, byte len) {
-		short aidOffset = off;
-		short aidLength = buf[off];
-		short infoOffset = (short)(aidOffset + aidLength + 1);
-		short infoLength = buf[infoOffset];
-		short paramsOffset = (short)(infoOffset + infoLength + 1);
-		short paramsLength = buf[paramsOffset];
+		byte aidLength = buf[off++];
+		short aidOffset = off; off += (short)(aidLength & 0xff);
+		byte infoLength = buf[off++];
+		short infoOffset = off; off += (short)(infoLength & 0xff);
+		byte paramsLength = buf[off++];
+		short paramsOffset = off; off += (short)(paramsLength & 0xff);
 
-		NeoPGPApplet app = new NeoPGPApplet(buf, (short)(paramsOffset + 1), paramsLength);
+		NeoPGPApplet app = new NeoPGPApplet(buf, paramsOffset, paramsLength);
 
-		app.register(buf, (short)(off + 1), buf[off]);
+		app.register(buf, aidOffset, aidLength);
 		app.reset();
 	}
 
