@@ -36,9 +36,9 @@ outside of an object constructor and all objects are created during the
 - [x] Key import
 - [x] Support for RSA keys
 - [x] Support for ECC keys
+- [x] KDF support
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
-- [ ] KDF support
 - [ ] Private DOs
 - [ ] Get Challenge command support
 - [ ] SmartPGPs secure messaging
@@ -90,6 +90,8 @@ supported key and quirks that are needed for your card, can be enabled.
 |        `01000000` | Brainpool P-512 support |
 |        `02000000` | secp256k1 support       |
 |        `00000001` | Disable transaction during key generation |
+|        `00000002` | Turn on KDF by default |
+|        `00000004` | Disable tag and length field for GET DATA on the KDF DO |
 
 ### Working Cards
 

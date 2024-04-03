@@ -61,6 +61,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short TAG_KEY_INFORMATION = (short)0x00de;
 	public static final short TAG_ALGORITHM_INFORMATION = (short)0x00fa;
 	public static final short TAG_EXTENDED_HEADER_LIST = (short)0x004d;
+	public static final short TAG_KEY_DERIVATION_FUNCTION = (short)0x00f9;
 
 	public static final byte USER_PIN_MIN_LENGTH = (byte)6;
 	public static final byte ADMIN_PIN_MIN_LENGTH = (byte)8;
@@ -108,8 +109,30 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		'1', '2', '3', '4', '5', '6',
 	};
 
+	public static final byte[] DEFAULT_USER_PIN_KDF = {
+		(byte)0x3a, (byte)0xbc, (byte)0xb5, (byte)0x78,
+		(byte)0x6b, (byte)0x49, (byte)0xf4, (byte)0xfc,
+		(byte)0x9b, (byte)0xa0, (byte)0xbc, (byte)0x0a,
+		(byte)0x61, (byte)0xac, (byte)0xa2, (byte)0xd0,
+		(byte)0x09, (byte)0x6e, (byte)0xea, (byte)0x38,
+		(byte)0x7c, (byte)0x74, (byte)0x2b, (byte)0xa9,
+		(byte)0xf2, (byte)0x55, (byte)0xf4, (byte)0xa4,
+		(byte)0x38, (byte)0xdf, (byte)0xac, (byte)0x0e,
+	};
+
 	public static final byte[] DEFAULT_ADMIN_PIN = {
 		'1', '2', '3', '4', '5', '6', '7', '8',
+	};
+
+	public static final byte[] DEFAULT_ADMIN_PIN_KDF = {
+		(byte)0x77, (byte)0x34, (byte)0x45, (byte)0xb9,
+		(byte)0xb2, (byte)0x94, (byte)0xf3, (byte)0x24,
+		(byte)0x9e, (byte)0x3a, (byte)0x9c, (byte)0x3f,
+		(byte)0xb8, (byte)0x5e, (byte)0x2b, (byte)0xb5,
+		(byte)0x1f, (byte)0x0d, (byte)0xd5, (byte)0xec,
+		(byte)0xce, (byte)0x7b, (byte)0xe3, (byte)0xf8,
+		(byte)0x1a, (byte)0x6d, (byte)0x51, (byte)0x8d,
+		(byte)0x25, (byte)0xd9, (byte)0x77, (byte)0x72,
 	};
 
 	public static final byte[] DEFAULT_LANGUAGE = {
@@ -118,6 +141,35 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 	public static final byte[] DEFAULT_SEX = {
 		'0',
+	};
+
+	public static final byte[] DEFAULT_KDF_OFF = {
+		(byte)0x81, (byte)0x01, (byte)0x00,
+	};
+
+	public static final byte[] DEFAULT_KDF_ON = {
+		(byte)0x81, (byte)0x01, (byte)0x03, (byte)0x82, (byte)0x01,
+		(byte)0x08, (byte)0x83, (byte)0x04, (byte)0x03, (byte)0xe0,
+		(byte)0x00, (byte)0x00, (byte)0x84, (byte)0x08, (byte)0xef,
+		(byte)0xb0, (byte)0x1f, (byte)0xcf, (byte)0xd6, (byte)0x8c,
+		(byte)0x84, (byte)0x37, (byte)0x85, (byte)0x08, (byte)0xc9,
+		(byte)0xcf, (byte)0xc7, (byte)0xcf, (byte)0xaa, (byte)0xc7,
+		(byte)0x93, (byte)0x16, (byte)0x86, (byte)0x08, (byte)0x94,
+		(byte)0xf2, (byte)0x11, (byte)0xd1, (byte)0x30, (byte)0x12,
+		(byte)0xf2, (byte)0xd2, (byte)0x87, (byte)0x20, (byte)0x3a,
+		(byte)0xbc, (byte)0xb5, (byte)0x78, (byte)0x6b, (byte)0x49,
+		(byte)0xf4, (byte)0xfc, (byte)0x9b, (byte)0xa0, (byte)0xbc,
+		(byte)0x0a, (byte)0x61, (byte)0xac, (byte)0xa2, (byte)0xd0,
+		(byte)0x09, (byte)0x6e, (byte)0xea, (byte)0x38, (byte)0x7c,
+		(byte)0x74, (byte)0x2b, (byte)0xa9, (byte)0xf2, (byte)0x55,
+		(byte)0xf4, (byte)0xa4, (byte)0x38, (byte)0xdf, (byte)0xac,
+		(byte)0x0e, (byte)0x88, (byte)0x20, (byte)0x77, (byte)0x34,
+		(byte)0x45, (byte)0xb9, (byte)0xb2, (byte)0x94, (byte)0xf3,
+		(byte)0x24, (byte)0x9e, (byte)0x3a, (byte)0x9c, (byte)0x3f,
+		(byte)0xb8, (byte)0x5e, (byte)0x2b, (byte)0xb5, (byte)0x1f,
+		(byte)0x0d, (byte)0xd5, (byte)0xec, (byte)0xce, (byte)0x7b,
+		(byte)0xe3, (byte)0xf8, (byte)0x1a, (byte)0x6d, (byte)0x51,
+		(byte)0x8d, (byte)0x25, (byte)0xd9, (byte)0x77, (byte)0x72,
 	};
 
 	/**
@@ -133,6 +185,13 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	 * with broken OwnerPIN implementations, e.g. JCOP J3R180.
 	 */
 	public static final short CFG_KDF_ON_BY_DEFAULT = (short)0x0002;
+
+	/**
+	 * Disable tag and length field for GET DATA on the KDF DO. Older GnuPG
+	 * versions have an invalid implementation of the KDF DO and expect that
+	 * there is no tag nor a length, i.e. it is a primitive TLV.
+	 */
+	public static final short CFG_KDF_NO_TAG_AND_LENGTH = (short)0x0004;
 
 	private boolean cardTerminated;
 	private short keyBitmask = (short)0x0008;
@@ -161,6 +220,8 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	private NeoByteArray[] caFingerprints = null;
 	private byte[] digitalSignatureCounter = null;
 
+	private NeoByteArray keyDerivationFunction;
+
 	private static final byte USER_PIN_MODE_NORMAL = (byte)0;
 	private static final byte USER_PIN_MODE_CDS = (byte)1;
 	private byte[] tmpBuffer = null;
@@ -171,8 +232,16 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		if (len >= (short)4)
 			cardConfiguration = Util.getShort(buf, (short)(off + 2));
 
-		userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN, (byte)2);
-		adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN);
+		if (hasConfiguration(CFG_KDF_ON_BY_DEFAULT)) {
+			keyDerivationFunction = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH, DEFAULT_KDF_ON);
+			userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN_KDF, (byte)2);
+			adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN_KDF);
+		} else {
+			keyDerivationFunction = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH, DEFAULT_KDF_OFF);
+			userPIN = new NeoPIN(USER_PIN_MIN_LENGTH, DEFAULT_USER_PIN, (byte)2);
+			adminPIN = new NeoPIN(ADMIN_PIN_MIN_LENGTH, DEFAULT_ADMIN_PIN);
+		}
+
 		userPUK = new NeoPIN(USER_PUK_MIN_LENGTH);
 		name = new NeoByteArrayWithLength(NAME_MAX_LENGTH);
 		language = new NeoByteArrayWithLength(LANGUAGE_MAX_LENGTH, DEFAULT_LANGUAGE);
@@ -330,6 +399,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		decryptionKeyStore.clear();
 		authenticationKeyStore.clear();
 		zeroByteArray(digitalSignatureCounter);
+		keyDerivationFunction.clear();
 
 		/* keep last, so we don't have to use transactions */
 		cardTerminated = false;
@@ -516,7 +586,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			(byte)(0 << 3) | /* Private use DOs supported */
 			(byte)(1 << 2) | /* Algorithm attributes changable */
 			(byte)(0 << 1) | /* ENC/DEC with AES supported */
-			(byte)(0 << 0);  /* KDF supported */
+			(byte)(1 << 0);  /* KDF supported */
 
 		/* SM algorithm */
 		buf[off++] = (byte)0x00;
@@ -551,6 +621,22 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		setPreparedLength1(buf, off, lengthOffset1);
 
 		return off;
+	}
+
+	private short getKeyDerivationFunction(byte[] buf, short off) {
+		short lengthOffset;
+
+		if (!hasConfiguration(CFG_KDF_NO_TAG_AND_LENGTH)) {
+			off = setTag(buf, off, TAG_KEY_DERIVATION_FUNCTION);
+			off = lengthOffset = prepareLength1(buf, off);
+			off = keyDerivationFunction.get(buf, off);
+			setPreparedLength1(buf, off, lengthOffset);
+		} else {
+			off = keyDerivationFunction.get(buf, off);
+		}
+
+		return off;
+
 	}
 
 	private short getKeyInformation(byte[] buf, short off) {
@@ -772,6 +858,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		case TAG_ALGORITHM_INFORMATION:
 			off = getAlgorithmInformation(buf, off);
 			break;
+		case TAG_KEY_DERIVATION_FUNCTION:
+			off = getKeyDerivationFunction(buf, off);
+			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			break;
@@ -918,6 +1007,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 				authenticationKey = newKey;
 				JCSystem.commitTransaction();
 			} break;
+		case TAG_KEY_DERIVATION_FUNCTION:
+			adminPIN.assertValidated();
+			off = keyDerivationFunction.set(buf, off, lc);
+			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			break;
