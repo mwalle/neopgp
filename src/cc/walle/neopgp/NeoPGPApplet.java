@@ -120,7 +120,19 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		'0',
 	};
 
+	/**
+	 * Don't use transactions during key generation. Some cards, like the
+	 * ACOSJ, will use transactions by themselves during key generation and
+	 * will throw a TransactionException(IN_PROGRESS) if there is alreay a
+	 * transaction in progress.
+	 */
 	public static final short CFG_NO_KEYGEN_TRANSACTION = (short)0x0001;
+
+	/**
+	 * Turn on KDF by default. This is mostly used as a workaround for cards
+	 * with broken OwnerPIN implementations, e.g. JCOP J3R180.
+	 */
+	public static final short CFG_KDF_ON_BY_DEFAULT = (short)0x0002;
 
 	private boolean cardTerminated;
 	private short keyBitmask = (short)0x0008;
