@@ -18,7 +18,7 @@
   <target name="applet">
     <javacard>
       <cap output="NeoPGPApplet.cap" targetsdk="3.0.4" sources="${main.src.dir}" includes="cc/walle/neopgp/*.java" classes="${ant.classes.dir}" aid="d27600012401" version="1.0">
-        <applet class="cc.walle.neopgp.NeoPGPApplet" aid="d276000124010304ffff000000000000" />
+        <applet class="cc.walle.neopgp.NeoPGPApplet" aid="d2760001240103040010000000000000" />
       </cap>
     </javacard>
   </target>
