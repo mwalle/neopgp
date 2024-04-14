@@ -47,6 +47,20 @@ public abstract class JcardsimTestCase {
 	}
 
 	/**
+	 * Sends the default user PIN for CDS operation.
+	 */
+	public void userCDS() {
+		assertResponseOK("00200081 06 313233343536");
+	}
+
+	/**
+	 * Sends the default user PIN.
+	 */
+	public void user() {
+		assertResponseOK("00200082 06 313233343536");
+	}
+
+	/**
 	 * Changes the signature key to RSA-2048.
 	 *
 	 * @param keyRef Key ID, 1 for SIG, 2 for DEC, 3 for AUT key.

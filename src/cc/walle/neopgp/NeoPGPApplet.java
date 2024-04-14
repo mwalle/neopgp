@@ -1256,12 +1256,12 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 		switch (op) {
 		case PSO_OP_COMPUTE_DIGITAL_SIGNATURE:
-			userPIN.isValidated(USER_PIN_MODE_CDS);
+			userPIN.assertValidated(USER_PIN_MODE_CDS);
 			incrementDigitalSignatureCounter();
 			off = signatureKey.sign(buf, off, lc);
 			break;
 		case PSO_OP_DECIPHER:
-			userPIN.isValidated(USER_PIN_MODE_NORMAL);
+			userPIN.assertValidated(USER_PIN_MODE_NORMAL);
 			off = decryptionKey.decipher(buf, off, lc);
 			break;
 		case PSO_OP_ENCIPHER:
@@ -1290,7 +1290,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		if (p1 != 0 || p2 != 0)
 			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
 
-		userPIN.isValidated(USER_PIN_MODE_NORMAL);
+		userPIN.assertValidated(USER_PIN_MODE_NORMAL);
 		off = authenticationKey.authenticate(buf, off, lc);
 		apdu.setOutgoingAndSend((short)0, off);
 	}
