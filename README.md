@@ -38,9 +38,9 @@ outside of an object constructor and all objects are created during the
 - [x] Support for ECC keys
 - [x] KDF support
 - [x] Get Challenge command support
+- [x] Private DOs
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
-- [ ] Private DOs
 - [ ] SmartPGPs secure messaging
 
 ## Build it yourself

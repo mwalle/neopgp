@@ -40,4 +40,24 @@ public class PutDataTest extends JcardsimTestCase {
 		assertResponseOK("00DA00C81400112233445566778899AABBCCDDEEFF00112233");
 		assertResponseData("000000000000000000000000000000000000000000112233445566778899AABBCCDDEEFF001122330000000000000000000000000000000000000000" , "00CA00C500");
 	}
+
+	@Test public void privateDO0101() {
+		user();
+		assertResponseOK("00DA010108001122334455667788");
+	}
+
+	@Test public void privateDO0102() {
+		admin();
+		assertResponseOK("00DA010208001122334455667788");
+	}
+
+	@Test public void privateDO0103() {
+		user();
+		assertResponseOK("00DA010308001122334455667788");
+	}
+
+	@Test public void privateDO0104() {
+		admin();
+		assertResponseOK("00DA010408001122334455667788");
+	}
 }

@@ -63,6 +63,10 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	public static final short TAG_ALGORITHM_INFORMATION = (short)0x00fa;
 	public static final short TAG_EXTENDED_HEADER_LIST = (short)0x004d;
 	public static final short TAG_KEY_DERIVATION_FUNCTION = (short)0x00f9;
+	public static final short TAG_PRIVATE_DO_0101 = (short)0x0101;
+	public static final short TAG_PRIVATE_DO_0102 = (short)0x0102;
+	public static final short TAG_PRIVATE_DO_0103 = (short)0x0103;
+	public static final short TAG_PRIVATE_DO_0104 = (short)0x0104;
 
 	public static final byte USER_PIN_MIN_LENGTH = (byte)6;
 	public static final byte ADMIN_PIN_MIN_LENGTH = (byte)8;
@@ -223,6 +227,8 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 
 	private NeoByteArray keyDerivationFunction;
 
+	private NeoByteArray[] privateDO = null;
+
 	private static final byte USER_PIN_MODE_NORMAL = (byte)0;
 	private static final byte USER_PIN_MODE_CDS = (byte)1;
 	private byte[] tmpBuffer = null;
@@ -266,6 +272,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		digitalSignatureCounter = new byte[3];
 		createTmpBuffer();
 		random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
+		privateDO = new NeoByteArrayWithLength[4];
+		for (byte i = 0; i < privateDO.length; i++)
+			privateDO[i] = new NeoByteArrayWithLength(SPECIAL_DO_MAX_LENGTH);
 	}
 
 	private void createTmpBuffer() {
@@ -405,6 +414,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		authenticationKeyStore.clear();
 		zeroByteArray(digitalSignatureCounter);
 		keyDerivationFunction.clear();
+
+		for (byte i = 0; i < privateDO.length; i++)
+			privateDO[i].clear();
 
 		/* keep last, so we don't have to use transactions */
 		cardTerminated = false;
@@ -588,7 +600,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			(byte)(1 << 6) | /* GET_CHALLENGE supported */
 			(byte)(1 << 5) | /* Key import supported  */
 			(byte)(0 << 4) | /* PW status changeable */
-			(byte)(0 << 3) | /* Private use DOs supported */
+			(byte)(1 << 3) | /* Private use DOs supported */
 			(byte)(1 << 2) | /* Algorithm attributes changable */
 			(byte)(0 << 1) | /* ENC/DEC with AES supported */
 			(byte)(1 << 0);  /* KDF supported */
@@ -866,6 +878,20 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		case TAG_KEY_DERIVATION_FUNCTION:
 			off = getKeyDerivationFunction(buf, off);
 			break;
+		case TAG_PRIVATE_DO_0101:
+			off = privateDO[0].get(buf, off);
+			break;
+		case TAG_PRIVATE_DO_0102:
+			off = privateDO[1].get(buf, off);
+			break;
+		case TAG_PRIVATE_DO_0103:
+			userPIN.assertValidated(USER_PIN_MODE_NORMAL);
+			off = privateDO[2].get(buf, off);
+			break;
+		case TAG_PRIVATE_DO_0104:
+			adminPIN.assertValidated();
+			off = privateDO[3].get(buf, off);
+			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);
 			break;
@@ -1015,6 +1041,22 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		case TAG_KEY_DERIVATION_FUNCTION:
 			adminPIN.assertValidated();
 			off = keyDerivationFunction.set(buf, off, lc);
+			break;
+		case TAG_PRIVATE_DO_0101:
+			userPIN.assertValidated(USER_PIN_MODE_NORMAL);
+			privateDO[0].set(buf, off, lc);
+			break;
+		case TAG_PRIVATE_DO_0102:
+			adminPIN.assertValidated();
+			privateDO[1].set(buf, off, lc);
+			break;
+		case TAG_PRIVATE_DO_0103:
+			userPIN.assertValidated(USER_PIN_MODE_NORMAL);
+			privateDO[2].set(buf, off, lc);
+			break;
+		case TAG_PRIVATE_DO_0104:
+			adminPIN.assertValidated();
+			privateDO[3].set(buf, off, lc);
 			break;
 		default:
 			ISOException.throwIt(ISO7816.SW_INCORRECT_P1P2);

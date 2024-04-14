@@ -34,4 +34,35 @@ public class GetDataTest extends JcardsimTestCase {
 	@Test public void defaultURL() {
 		assertResponseData("", "00CA5F5000FFFE");
 	}
+
+	@Test public void defaultPrivateDO0101() {
+		assertResponseData("", "00CA010100FFFE");
+	}
+
+	@Test public void defaultPrivateDO0102() {
+		assertResponseData("", "00CA010200FFFE");
+	}
+
+	@Test public void defaultPrivateDO0103() {
+		user();
+		assertResponseData("", "00CA010300FFFE");
+	}
+
+	@Test public void defaultPrivateDO0103NoAuthentication() {
+		assertResponseStatus(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED, "00CA010300FFFE");
+	}
+
+	@Test public void defaultPrivateDO0104() {
+		admin();
+		assertResponseData("", "00CA010400FFFE");
+	}
+
+	@Test public void defaultPrivateDO0104NoAuthentication() {
+		assertResponseStatus(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED, "00CA010400FFFE");
+	}
+
+	@Test public void defaultPrivateDO0104UserAuthentication() {
+		user();
+		assertResponseStatus(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED, "00CA010400FFFE");
+	}
 }
