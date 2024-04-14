@@ -105,4 +105,10 @@ public abstract class JcardsimTestCase {
 		assertEquals(ISO7816.SW_NO_ERROR & 0xffff, res.getSW());
 		assertEquals(expected, ByteUtil.hexString(res.getData()));
 	}
+
+	public void assertResponseLength(int expected, String command) {
+		ResponseAPDU res = transmit(command);
+		assertEquals(ISO7816.SW_NO_ERROR & 0xffff, res.getSW());
+		assertEquals(expected, res.getData().length);
+	}
 }

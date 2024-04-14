@@ -37,10 +37,10 @@ outside of an object constructor and all objects are created during the
 - [x] Support for RSA keys
 - [x] Support for ECC keys
 - [x] KDF support
+- [x] Get Challenge command support
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
 - [ ] Private DOs
-- [ ] Get Challenge command support
 - [ ] SmartPGPs secure messaging
 
 ## Build it yourself

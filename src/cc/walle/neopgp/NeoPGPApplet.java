@@ -7,6 +7,7 @@ import javacard.framework.ISO7816;
 import javacard.framework.ISOException;
 import javacard.framework.JCSystem;
 import javacard.framework.Util;
+import javacard.security.RandomData;
 import javacardx.apdu.ExtendedLength;
 
 public class NeoPGPApplet extends Applet implements ExtendedLength {
@@ -225,6 +226,9 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 	private static final byte USER_PIN_MODE_NORMAL = (byte)0;
 	private static final byte USER_PIN_MODE_CDS = (byte)1;
 	private byte[] tmpBuffer = null;
+        RandomData random;
+
+	public static final short GET_CHALLENGE_MAX_LENGTH = (short)0x80;
 
 	private NeoPGPApplet(byte[] buf, short off, short len) {
 		if (len >= (short)2)
@@ -261,6 +265,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			caFingerprints[i] = new NeoFixedByteArray(FINGERPRINT_LENGTH);
 		digitalSignatureCounter = new byte[3];
 		createTmpBuffer();
+		random = RandomData.getInstance(RandomData.ALG_SECURE_RANDOM);
 	}
 
 	private void createTmpBuffer() {
@@ -477,7 +482,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
 			break;
 		case INS_GET_CHALLENGE:
-			ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
+			processGetChallenge(apdu);
 			break;
 		case INS_TERMINATE_DF:
 			processTerminateDF(apdu);
@@ -580,7 +585,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		/* exteded capabilites */
 		buf[off++] =
 			(byte)(0 << 7) | /* SM supported */
-			(byte)(0 << 6) | /* GET_CHALLENGE supported */
+			(byte)(1 << 6) | /* GET_CHALLENGE supported */
 			(byte)(1 << 5) | /* Key import supported  */
 			(byte)(0 << 4) | /* PW status changeable */
 			(byte)(0 << 3) | /* Private use DOs supported */
@@ -592,7 +597,7 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 		buf[off++] = (byte)0x00;
 
 		/* Max length for GET CHALLENGE */
-		off = Util.setShort(buf, off, (short)0);
+		off = Util.setShort(buf, off, GET_CHALLENGE_MAX_LENGTH);
 
 		/* Max length of cardholder certificates */
 		off = Util.setShort(buf, off, (short)0);
@@ -1335,5 +1340,24 @@ public class NeoPGPApplet extends Applet implements ExtendedLength {
 			ISOException.throwIt(ISO7816.SW_WRONG_DATA);
 		}
 		JCSystem.commitTransaction();
+	}
+
+	private void processGetChallenge(APDU apdu) throws ISOException {
+		byte[] buf = apdu.getBuffer();
+		byte p1 = buf[ISO7816.OFFSET_P1];
+		byte p2 = buf[ISO7816.OFFSET_P2];
+		short le;
+
+		if (p1 != 0 || p2 != 0)
+			ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
+
+		le = apdu.setOutgoing();
+		if (le > GET_CHALLENGE_MAX_LENGTH)
+			le = GET_CHALLENGE_MAX_LENGTH;
+
+		random.generateData(buf, (short)0, le);
+
+		apdu.setOutgoingLength(le);
+		apdu.sendBytesLong(buf, (short)0, le);
 	}
 }
