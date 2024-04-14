@@ -1,5 +1,11 @@
 # NeoPGP - A robust Java Card OpenPGP applet
 
+NeoPGP is a free and open souce Java card applet which implements the [OpenPGP
+3.4.1
+specification](https://gnupg.org/ftp/specs/OpenPGP-smart-card-application-3.4.1.pdf).
+It aims to be robust, lightweight (in a sense of RAM consumption) and highly
+configurable. The applet supports ECC as well as RSA keys.
+
 ## Prior Work
 * [SmartPGP](https://github.com/github-af/SmartPGP)
 * [YubiKey NEO OpenPGP](https://github.com/Yubico/ykneo-openpgp)
@@ -43,6 +49,7 @@ outside of an object constructor and all objects are created during the
 - [ ] Per signature request PIN verification
 - [ ] Cardholder Certificates (DO 7F21)
 - [ ] SmartPGPs secure messaging
+
 
 ## Build it yourself
 
