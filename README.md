@@ -41,6 +41,7 @@ outside of an object constructor and all objects are created during the
 - [x] Private DOs
 - [ ] AES encryption/decryption
 - [ ] Per signature request PIN verification
+- [ ] Cardholder Certificates (DO 7F21)
 - [ ] SmartPGPs secure messaging
 
 ## Build it yourself
